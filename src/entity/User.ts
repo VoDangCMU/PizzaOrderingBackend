@@ -3,7 +3,7 @@ import {Entity, Column, PrimaryGeneratedColumn} from "typeorm"
 export const USER_TABLE_NAME = "users";
 
 @Entity({name: USER_TABLE_NAME})
-export class User {
+export default class User {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number
 
