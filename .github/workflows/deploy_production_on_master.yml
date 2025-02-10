@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -32,6 +32,7 @@ jobs:
           tags: realkhoa/pizza_ordering_backend:latest
 
   trigger-update:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Trigger docker update
