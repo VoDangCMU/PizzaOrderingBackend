@@ -33,7 +33,7 @@
     "dev": "cross-env ENV=development nodemon --config nodemon.json",
     "test": "cross-env ENV=testing jest",
     "build": "rimraf dist && tsc -p tsconfig.json && tsc-alias",
-    "start": "cross-env ENV=production node ./dist/index.js",
+    "start": "node ./dist/index.js",
     "migration:create": "ts-node ./src/runner/migration_create.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
