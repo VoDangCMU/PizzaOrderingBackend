@@ -31,6 +31,9 @@ jobs:
           push: true
           tags: realkhoa/pizza_ordering_backend:latest
 
+  trigger-update:
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger docker update
         uses: appleboy/ssh-action@master
         with:
@@ -39,4 +42,4 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd ~/PizzaBackendRunner
-            sh run.production.sh
+            sh run.staging.sh
