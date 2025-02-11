@@ -8,30 +8,34 @@ export function injectCoreServices(req: Request, res: Response, next: NextFuncti
         });
     }
 
-    res.BadRequest = function (message: string = "Bad Request") {
+    res.BadRequest = function (detail: any, message: string = "Bad Request") {
         this.status(400).json({
             message: message,
+            detail,
             statusCode: 400
         });
     }
 
-    res.Unauthorized = function (message: string = "Unauthorized") {
+    res.Unauthorized = function (detail: any, message: string = "Unauthorized") {
         this.status(401).json({
             message: message,
+            detail,
             statusCode: 401
         })
     }
 
-    res.Forbidden = function (message: string = "Forbidden") {
+    res.Forbidden = function (detail: any, message: string = "Forbidden") {
         this.status(403).json({
             message: message,
+            detail,
             statusCode: 403
         })
     }
 
-    res.InternalServerError = function (message: string = "Internal Server Error") {
+    res.InternalServerError = function (detail: any, message: string = "Internal Server Error") {
         this.status(500).json({
             message: message,
+            detail,
             statusCode: 500
         })
     }
