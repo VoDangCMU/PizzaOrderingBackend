@@ -1,9 +1,9 @@
 declare namespace Express {
     export interface Response {
         Ok(data: any): void
-        BadRequest(message: string): void
-        Unauthorized(message: string): void
-        Forbidden(message: string): void
-        InternalServerError(message: string): void
+        BadRequest(detail: any, message: string = "Bad Request"): void
+        Unauthorized(detail: any, message: string = "Unauthorized"): void
+        Forbidden(detail: any, message: string = "Forbidden"): void
+        InternalServerError(detail: any, message: string = "Internal Server Error"): void
     }
 }
