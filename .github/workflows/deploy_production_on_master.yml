@@ -43,4 +43,4 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd ~/PizzaBackendRunner
-            sh run.staging.sh
+            sh run.production.sh
