@@ -8,7 +8,7 @@ import morgan from "morgan";
 
 AppDataSource.initialize()
     .then(() => console.log('Database connection established'))
-    .catch((err) => {
+    .catch((err:any) => {
         console.error(err);
     });
 
