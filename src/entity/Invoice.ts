@@ -18,7 +18,7 @@ export default class Invoice {
     @Column()
     paid: boolean;
 
-    @ManyToOne(() => User, (user) => user.invoice)
+    @ManyToOne(() => User, { onDelete: "CASCADE" })
     @JoinColumn({name: 'userId'})
     user: User;
 
