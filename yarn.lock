@@ -2747,13 +2747,6 @@ micromatch@^4.0.4, micromatch@^4.0.8:
     braces "^3.0.3"
     picomatch "^2.3.1"
 
-migration@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/migration/-/migration-0.3.0.tgz#09a2345b9892d45149c6931607a5b765e61b8a86"
-  integrity sha512-Dnm/6N02IQBVq1ZCptA3T3NWZ9jfAe7bTQ8SaxoCBH8ahUmFwQkN6nb+eEwbM4PBPqN+11NzNYxytrnalXV4sw==
-  dependencies:
-    moment "~2.0.0"
-
 mime-db@1.52.0:
   version "1.52.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.52.0.tgz#bbabcdc02859f4987301c856e3387ce5ec43bf70"
@@ -2843,11 +2836,6 @@ mkdirp@^2.1.3:
   version "2.1.6"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-2.1.6.tgz#964fbcb12b2d8c5d6fbc62a963ac95a273e2cc19"
   integrity sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==
-
-moment@~2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.0.0.tgz#2bbc5b44c321837693ab6efcadbd46ed946211fe"
-  integrity sha512-l3jCjCJfC6pIuca13GMpCU4liEYvYk17XpFgpJSyLp8RX+dwdgrZBvtkaofmIigplezbG1VZFUgQbDFRSd37YA==
 
 morgan@^1.10.0:
   version "1.10.0"

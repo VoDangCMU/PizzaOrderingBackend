@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn} from "typeorm";
+import {Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn} from "typeorm";
 import User from "@root/entity/User";
 import Cart from "@root/entity/Cart";
 
@@ -18,7 +18,7 @@ export default class Invoice {
     @Column()
     paid: boolean;
 
-    @OneToOne(() => User, (user) => user.invoice)
+    @ManyToOne(() => User, (user) => user.invoice)
     @JoinColumn({name: 'userId'})
     user: User;
 

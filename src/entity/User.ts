@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryGeneratedColumn, OneToOne} from "typeorm"
+import {Column, Entity, PrimaryGeneratedColumn, OneToOne, OneToMany} from "typeorm"
 import Invoice from "@root/entity/Invoice";
 import Cart from "@root/entity/Cart";
 
@@ -33,7 +33,7 @@ export default class User {
     @Column()
     address: string
 
-    @OneToOne(type => Invoice, (invoice) => invoice.user)
+    @OneToMany(type => Invoice, (invoice) => invoice.user)
     invoice: Invoice;
 
     @OneToOne(type => Cart, (cart) => cart.user)
