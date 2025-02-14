@@ -6,4 +6,9 @@ declare namespace Express {
         Forbidden(detail: any, message: string = "Forbidden"): void
         InternalServerError(detail: any, message: string = "Internal Server Error"): void
     }
+
+    export interface Request {
+        userID: string
+        username: string
+    }
 }

@@ -5,10 +5,11 @@ import {AppDataSource} from "@root/data-source";
 import path from "path";
 import fs from "fs";
 import morgan from "morgan";
+import isAuth from "@root/middlewares/isAuth";
 
 AppDataSource.initialize()
     .then(() => console.log('Database connection established'))
-    .catch((err) => {
+    .catch((err:any) => {
         console.error(err);
     });
 
@@ -18,7 +19,11 @@ app.use(injectCoreServices);
 app.use(express.json());
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 
-app.get("/", (req, res) => {
+app.get("/health-check", (req, res) => {
+    res.Ok("Work")
+})
+
+app.get("/health-check-with-token", isAuth, (req, res) => {
     res.Ok("Work")
 })
 

@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn} from "typeorm"
+import {Column, Entity, PrimaryGeneratedColumn} from "typeorm"
 
 export const USER_TABLE_NAME = "users";
 
@@ -7,10 +7,10 @@ export default class User {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number
 
-    @Column()
+    @Column({unique: true})
     username: string
 
-    @Column()
+    @Column({select: false})
     password: string
 
     @Column()
@@ -25,7 +25,7 @@ export default class User {
     @Column()
     phone: string
 
-    @Column()
+    @Column({unique: true})
     email: string
 
     @Column()
