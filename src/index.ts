@@ -6,9 +6,10 @@ import path from "path";
 import fs from "fs";
 import morgan from "morgan";
 import isAuth from "@root/middlewares/isAuth";
+import logger from "@root/logger";
 
 AppDataSource.initialize()
-    .then(() => console.log('Database connection established'))
+    .then(() => logger.debug("AppDataSource initialized"))
     .catch((err:any) => {
         console.error(err);
     });
@@ -38,7 +39,7 @@ for (const router of routes) {
 
     for (const routerFile of routerFiles) {
         const requiredPath = path.resolve(routerPath, routerFile);
-        console.log("Registering router:", router, "- File: ", requiredPath);
+        logger.debug("Registering router:", router, "- File: ", requiredPath);
 
         const routerBody = require(requiredPath);
 
@@ -47,5 +48,5 @@ for (const router of routes) {
 }
 
 app.listen(env.APP_PORT, () => {
-    console.log(`Server running on port ${env.APP_PORT}\nURL: http://localhost:${env.APP_PORT}`);
+    logger.info(`Server running on port ${env.APP_PORT}\nURL: http://localhost:${env.APP_PORT}`);
 });

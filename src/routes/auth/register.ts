@@ -3,6 +3,7 @@ import User from "@root/entity/User";
 import bcrypt from "bcrypt";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
+import logger from "@root/logger";
 
 const RegisterParamsSchema = z.object({
     username: z.string(),
@@ -18,17 +19,16 @@ const RegisterParamsSchema = z.object({
 const UserRepository = AppDataSource.getRepository(User);
 
 export default function register(req: Request, res: Response): void {
-    console.log(req.body);
+    logger.debug("Request Body", req.body);
     const parsed = RegisterParamsSchema.safeParse(req.body);
 
     if (parsed.error) {
+        logger.warn(parsed.error);
         res.BadRequest(parsed.error);
         return;
     }
-    console.log(parsed.data);
 
     const userData = parsed.data;
-
     UserRepository.findOne({
         where: [
             {email: userData.email},
@@ -37,6 +37,7 @@ export default function register(req: Request, res: Response): void {
     })
         .then((existedUser) => {
             if (existedUser) {
+                logger.debug("Existed User", existedUser);
                 res.BadRequest("Username or Email already exists");
                 return;
             }
@@ -57,7 +58,10 @@ export default function register(req: Request, res: Response): void {
                     UserRepository.findOne({where: {email: userData.email}})
                     .then((createdUser) => res.Ok(createdUser));
                 })
-                .catch((err) => res.InternalServerError(err));
+                .catch((err) => {
+                    logger.error(err);
+                    res.InternalServerError("")
+                });
         })
         .catch((err) => res.InternalServerError(err));
 }
