@@ -1,5 +1,5 @@
-import {Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn} from 'typeorm';
-import User from "@root/entity/User";
+import {Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import Users from "@root/entity/Users";
 
 export const CART_TABLE_NAME = "carts";
 
@@ -8,7 +8,6 @@ export default class Cart {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number;
 
-    @OneToOne(() => User, (user) => user.cart)
-    @JoinColumn({name: 'userId'})
-    user: User;
+    @ManyToOne(() => Users, {onDelete: "CASCADE"})
+    user: Users;
 }

@@ -1,5 +1,7 @@
 import { exec } from 'child_process';
 import path from 'path';
+import logger from "@root/logger";
+
 const migrationsPath = path.resolve(__dirname, '..', 'migrations');
 const dataSourcePath = path.resolve(
     __dirname,
@@ -11,11 +13,11 @@ const migrationName = process.argv.slice(2)[0];
 
 function run() {
     if (!migrationName) {
-        console.error('Migration name is missing');
+        logger.error('Migration name is missing');
         return;
     }
 
-    console.info(`Generating migration ${migrationName}`);
+    logger.info(`Generating migration ${migrationName}`);
 
     const migrationFilePath = path.resolve(migrationsPath, `${migrationName}`);
 
@@ -23,10 +25,10 @@ function run() {
         `ts-node node_modules/typeorm/cli.js migration:generate -d ${dataSourcePath} ${migrationFilePath}`,
         (error, stdout, stderr) => {
             if (error) {
-                console.error(error);
+                logger.error(error);
                 return;
             }
-            console.info(stdout);
+            logger.info(stdout);
         },
     );
 }
