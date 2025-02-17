@@ -5,6 +5,7 @@ import User from "@root/entity/User";
 import {compareSync} from "bcrypt";
 import jwt from 'jsonwebtoken';
 import env from "@root/env";
+import logger from "@root/logger";
 const UserRepository = AppDataSource.getRepository(User);
 
 const LoginParamsSchema = z.object({
@@ -14,7 +15,7 @@ const LoginParamsSchema = z.object({
 })
 
 export default async function login(req: Request, res: Response) {
-    console.log(req.body);
+    logger.debug("Request Body", req.body);
 
     const parsed = LoginParamsSchema.safeParse(req.body);
 
@@ -38,6 +39,8 @@ export default async function login(req: Request, res: Response) {
                 return;
             }
 
+            logger.debug(user);
+
             if (compareSync(loginParams.password, user.password)) {
 
                 const token = jwt.sign({
@@ -48,11 +51,16 @@ export default async function login(req: Request, res: Response) {
                     expiresIn: "7d",
                 })
 
+                logger.debug("TOKEN", token);
+
                 res.Ok(token);
                 return;
             }
 
             res.BadRequest("Password does not match.");
         })
-        .catch(err => res.InternalServerError(err));
+        .catch(err => {
+            logger.error(err);
+            res.InternalServerError(err)
+        });
 }
