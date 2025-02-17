@@ -1,19 +1,10 @@
-import {Request, Response, Router} from 'express';
+import {Router} from 'express';
+import register from "./register";
+import login from "@root/routes/auth/login";
 
-import User from "@root/entity/User";
-import {AppDataSource} from "@root/data-source";
-
-
-const UserRepository = AppDataSource.getRepository(User);
 const auth = Router();
 
-auth.post('/login', (req: Request, res: Response) => {
-
-})
-
-auth.post('/register', (req: Request, res: Response) => {
-    console.log(req.body);
-    UserRepository;
-})
+auth.post('/login', login)
+auth.post('/register', register);
 
 module.exports = auth;
