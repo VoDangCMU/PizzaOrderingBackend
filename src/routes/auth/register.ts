@@ -63,5 +63,8 @@ export default function register(req: Request, res: Response): void {
                     res.InternalServerError("")
                 });
         })
-        .catch((err) => res.InternalServerError(err));
+        .catch((err) => {
+            logger.error(err);
+            res.InternalServerError(err)
+        });
 }
