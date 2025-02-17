@@ -1,5 +1,5 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import PizzaCategory from "@root/entity/PizzaCategory";
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import PizzaCategories from "@root/entity/PizzaCategories";
 
 export const PIZZA_TABLE_NAME = "pizzas";
 
@@ -11,10 +11,6 @@ export default class Pizza {
     @Column()
     name: string;
 
-    @Column()
-    ingredient: string;
-
-    @ManyToOne(() => PizzaCategory, { onDelete: "CASCADE" })
-    @JoinColumn({name: 'categoryId'})
-    category: PizzaCategory;
+    @ManyToOne(() => PizzaCategories, {onDelete: "CASCADE"})
+    category: PizzaCategories;
 }

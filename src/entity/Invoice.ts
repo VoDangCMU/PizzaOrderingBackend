@@ -1,5 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn, ManyToOne, OneToOne, JoinColumn} from "typeorm";
-import User from "@root/entity/User";
+import {Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn} from "typeorm";
+import Users from "@root/entity/Users";
 import Cart from "@root/entity/Cart";
 
 export const INVOICE_TABLE_NAME = "invoices";
@@ -18,11 +18,9 @@ export default class Invoice {
     @Column()
     paid: boolean;
 
-    @ManyToOne(() => User, { onDelete: "CASCADE" })
-    @JoinColumn({name: 'userId'})
-    user: User;
+    @ManyToOne(() => Users, {onDelete: "CASCADE"})
+    user: Users;
 
-    @OneToOne(() => Cart)
-    @JoinColumn({name: 'cartId'})
+    @OneToOne(() => Cart, {onDelete: "CASCADE"})
     cart: Cart;
 }

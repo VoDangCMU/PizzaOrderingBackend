@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import User from "@root/entity/User";
+import Users from "@root/entity/Users";
 import bcrypt from "bcrypt";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
@@ -16,7 +16,7 @@ const RegisterParamsSchema = z.object({
     address: z.string(),
 })
 
-const UserRepository = AppDataSource.getRepository(User);
+const UserRepository = AppDataSource.getRepository(Users);
 
 export default function register(req: Request, res: Response): void {
     logger.debug("Request Body", req.body);
@@ -42,7 +42,7 @@ export default function register(req: Request, res: Response): void {
                 return;
             }
 
-            const user = new User();
+            const user = new Users();
 
             user.username = userData.username;
             user.email = userData.email;
