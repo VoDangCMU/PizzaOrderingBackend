@@ -1,11 +1,11 @@
 import {Request, Response} from "express";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
-import User from "@root/entity/User";
+import Users from "@root/entity/Users";
 import {compareSync} from "bcrypt";
 import jwt from 'jsonwebtoken';
 import env from "@root/env";
-const UserRepository = AppDataSource.getRepository(User);
+const UserRepository = AppDataSource.getRepository(Users);
 
 const LoginParamsSchema = z.object({
     username: z.string(),

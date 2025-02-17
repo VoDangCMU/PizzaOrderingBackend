@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn} from 'typeorm';
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
 import Cart from "@root/entity/Cart";
 import Pizza from "@root/entity/Pizza";
 
@@ -15,11 +15,9 @@ export default class CartItem {
     @Column()
     size: string;
 
-    @ManyToOne(() => Cart, { onDelete: "CASCADE" })
-    @JoinColumn({name: 'cartId'})
+    @ManyToOne(() => Cart, {onDelete: "CASCADE"})
     cart: Cart;
 
-    @ManyToOne(() => Pizza, { onDelete: "CASCADE" })
-    @JoinColumn({name: 'pizzaId'})
+    @ManyToOne(() => Pizza, {onDelete: "CASCADE"})
     pizza: Pizza;
 }
