@@ -10,13 +10,13 @@ user.get("/:id", getUserById);
 module.exports = user;
 
 const UserIdSchema = z.object({
-    id: z.string().transform((val) => parseInt(val, 10)),
+    id: z.number(),
 })
 
 const UserRepository = AppDataSource.getRepository(User);
 
 export default async function getUserById (req: Request, res: Response) {
-    const userId = req.params.id;
+    const userId = parseInt(req.params.id, 10);
 
     const parse = UserIdSchema.safeParse({id: userId});
     if(parse.error){
@@ -28,7 +28,6 @@ export default async function getUserById (req: Request, res: Response) {
 
     UserRepository.findOne({
         where: {id: Number(userIdParsed)},
-        select: ["id", "username", "dateOfBirth", "firstName", "lastName", "email", "phone", "address"],
     })
         .then(user => {
             if (!user) {
