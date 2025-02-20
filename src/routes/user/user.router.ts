@@ -7,15 +7,25 @@ import {z} from "zod";
 
 const user = express.Router();
 user.get("/:id", getUserById);
+user.put("/:id", updateUserById);
 module.exports = user;
 
 const UserIdSchema = z.object({
     id: z.number(),
 })
 
+const UserUpdateSchema = z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().email().optional(),
+    address: z.string().optional(),
+    dateOfBirth: z.union([z.string().transform(Date), z.date()]).optional(),
+});
+
 const UserRepository = AppDataSource.getRepository(User);
 
-export default async function getUserById (req: Request, res: Response) {
+export async function getUserById (req: Request, res: Response) {
     const userId = parseInt(req.params.id, 10);
 
     const parse = UserIdSchema.safeParse({id: userId});
@@ -34,6 +44,38 @@ export default async function getUserById (req: Request, res: Response) {
                 res.BadRequest("User not found");
                 return;
             }
+            res.send(user);
+        })
+        .catch(err => {
+            logger.error(err);
+        })
+}
+
+export async function updateUserById(req: Request, res: Response) {
+    const userId = parseInt(req.params.id, 10);
+
+    const parse = UserIdSchema.safeParse({id: userId});
+    if(parse.error){
+        res.BadRequest(parse.error);
+        return;
+    }
+    const userIdParsed = parse.data.id;
+
+    const parseBody = UserUpdateSchema.safeParse(req.body);
+    if(parseBody.error){
+        res.BadRequest(parse.error);
+        return;
+    }
+
+    UserRepository.findOne({
+        where: {id: Number(userIdParsed)},
+    })
+        .then(user => {
+            if (!user) {
+                res.BadRequest("User not found");
+                return;
+            }
+            Object.assign(user, parseBody.data);
             res.send(user);
         })
         .catch(err => {
