@@ -77,7 +77,8 @@ export async function updateUserById(req: Request, res: Response) {
                 return;
             }
             Object.assign(user, parseBody.data);
-            res.send(user);
+            UserRepository.save(user);
+            res.send("User updated successfully");
         })
         .catch(err => {
             logger.error(err);
