@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import Cart from "@root/entity/Cart";
 import Pizza from "@root/entity/Pizza";
 
@@ -20,4 +20,10 @@ export default class CartItem {
 
     @ManyToOne(() => Pizza, {onDelete: "CASCADE"})
     pizza: Pizza;
+
+    @CreateDateColumn()
+    createdAt: Date
+
+    @UpdateDateColumn()
+    updatedAt: Date
 }
