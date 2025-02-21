@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Users from "@root/entity/Users";
 import Cart from "@root/entity/Cart";
 
@@ -23,4 +23,10 @@ export default class Invoice {
 
     @OneToOne(() => Cart, {onDelete: "CASCADE"})
     cart: Cart;
+
+    @CreateDateColumn()
+    createdAt: Date
+
+    @UpdateDateColumn()
+    updatedAt: Date
 }
