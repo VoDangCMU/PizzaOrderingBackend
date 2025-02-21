@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import logger from "@root/logger";
+import {extractErrorsFromZod} from "@root/utils";
 
 const RegisterParamsSchema = z.object({
     username: z.string(),
@@ -24,7 +25,7 @@ export default function register(req: Request, res: Response): void {
 
     if (parsed.error) {
         logger.warn(parsed.error);
-        res.BadRequest(parsed.error);
+        res.BadRequest(extractErrorsFromZod(parsed.error));
         return;
     }
 
