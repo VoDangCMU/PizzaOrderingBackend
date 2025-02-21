@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import env from "@root/env";
 const UserRepository = AppDataSource.getRepository(Users);
 import logger from "@root/logger";
+import {extractErrorsFromZod} from "@root/utils";
 
 const LoginParamsSchema = z.object({
     username: z.string(),
@@ -20,7 +21,7 @@ export default async function login(req: Request, res: Response) {
     const parsed = LoginParamsSchema.safeParse(req.body);
 
     if (parsed.error) {
-        res.BadRequest(parsed.error);
+        res.BadRequest(extractErrorsFromZod(parsed.error));
         return;
     }
 
