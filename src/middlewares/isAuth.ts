@@ -23,6 +23,7 @@ export default function isAuth(req: Request, res: Response, next: NextFunction) 
 
         req.username = decoded.username;
         req.userID = decoded.userID;
+
         next();
     });
 }

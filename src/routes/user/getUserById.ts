@@ -23,14 +23,14 @@ export async function getUserById (req: Request, res: Response) {
     const userIdParsed = parse.data.id;
 
     UserRepository.findOne({
-        where: {id: Number(userIdParsed)},
+        where: {id: userIdParsed},
     })
         .then(user => {
             if (!user) {
                 res.BadRequest("User not found");
                 return;
             }
-            res.send(user);
+            res.Ok(user);
         })
         .catch(err => {
             logger.error(err);

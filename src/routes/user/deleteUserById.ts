@@ -2,29 +2,42 @@ import {Request, Response} from "express";
 import logger from "@root/logger";
 import {AppDataSource} from "@root/data-source";
 import User from "@root/entity/Users";
+import {z} from "zod";
+
+const UserIdSchema = z.object({
+    id: z.number(),
+})
 
 const UserRepository = AppDataSource.getRepository(User);
 
 export async function deleteUserById (req: Request, res: Response) {
-    const userId = Number(req.userID);
-    const paramId = Number(req.params.id);
-    if(userId !== paramId) {
-        res.BadRequest("Bad Request");
+    const userLoggedId = Number(req.userID);
+    const userId = parseInt(req.params.id, 10);
+
+    const parsed = UserIdSchema.safeParse({id: userId});
+    if(parsed.error){
+        res.BadRequest(parsed.error);
         return;
     }
 
-    UserRepository.findOne({
-        where: {id: userId}
-    })
-        .then(user => {
-            if (!user) {
-                res.BadRequest("User not found");
-                return;
-            }
-            UserRepository.remove(user);
-            res.send("User deleted");
+    const userIdParsed = parsed.data.id;
+    if(userLoggedId !== userIdParsed) {
+        res.BadRequest("Forbidden");
+        return;
+    }
+
+    try {
+        const user = await UserRepository.findOne({
+            where: {id: userIdParsed},
         })
-        .catch(err => {
-            logger.error(err);
-        })
+
+        if(!user) {
+            res.BadRequest("User not found");
+            return;
+        }
+        await UserRepository.delete(userIdParsed);
+        res.Ok("User deleted successfully");
+    } catch (error) {
+        logger.error(error);
+    }
 }

@@ -5,7 +5,7 @@ import {deleteUserById} from "@root/routes/user/deleteUserById";
 import isAuth from "@root/middlewares/isAuth";
 
 const user = express.Router();
-user.get("/:id", isAuth, getUserById);
+user.get("/:id", getUserById);
 user.put("/:id", isAuth, updateUserById);
 user.delete("/:id", isAuth, deleteUserById);
 module.exports = user;

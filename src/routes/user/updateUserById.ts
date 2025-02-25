@@ -3,8 +3,12 @@ import {Request, Response} from "express";
 import logger from "@root/logger";
 import {AppDataSource} from "@root/data-source";
 import User from "@root/entity/Users";
+import bcrypt from "bcrypt";
 
 const UserUpdateSchema = z.object({
+    id: z.number().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     phone: z.string().optional(),
@@ -16,34 +20,45 @@ const UserUpdateSchema = z.object({
 const UserRepository = AppDataSource.getRepository(User);
 
 export async function updateUserById(req: Request, res: Response) {
-    const userId = Number(req.userID);
-    const paramId = Number(req.params.id);
-    console.log("userLoggedId:", userId, "paramId:", paramId);
+    const userLoggedId = Number(req.userID);
+    const userId = parseInt(req.params.id, 10);
 
-    if(userId !== paramId) {
-        res.BadRequest("Bad Request");
+    const parsed = UserUpdateSchema.safeParse({id: userId});
+    if(parsed.error){
+        res.BadRequest(parsed.error);
         return;
     }
 
-    const parseBody = UserUpdateSchema.safeParse(req.body);
-    if(parseBody.error){
-        res.BadRequest(parseBody.error);
+    const userIdParsed = parsed.data.id;
+    if(userLoggedId !== userIdParsed) {
+        res.BadRequest("Forbidden");
         return;
     }
 
-    UserRepository.findOne({
-        where: {id: userId}
-    })
-        .then(user => {
-            if (!user) {
-                res.BadRequest("User not found");
-                return;
-            }
-            Object.assign(user, parseBody.data);
-            UserRepository.save(user);
-            res.send("User updated successfully");
+    const parsedBody = UserUpdateSchema.safeParse(req.body);
+    if(parsedBody.error){
+        res.BadRequest(parsedBody.error);
+        return;
+    }
+
+    try {
+        const user = await UserRepository.findOne({
+            where: {id: userIdParsed}
         })
-        .catch(err => {
-            logger.error(err);
-        })
+        if(!user) {
+            res.BadRequest("User not found");
+            return;
+        }
+
+        if(parsedBody.data.password) {
+            parsedBody.data.password = await bcrypt.hash(parsedBody.data.password, 10);
+        }
+
+        Object.assign(user, parsedBody.data);
+        await UserRepository.save(user);
+
+        res.Ok("User updated");
+    } catch (error) {
+        logger.error(error);
+    }
 }
