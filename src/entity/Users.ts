@@ -1,9 +1,9 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm"
+import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm"
 
 export const USER_TABLE_NAME = "users";
 
 @Entity({name: USER_TABLE_NAME})
-export default class User {
+export default class Users {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number
 
@@ -30,4 +30,10 @@ export default class User {
 
     @Column()
     address: string
+
+    @CreateDateColumn()
+    createdAt: Date
+
+    @UpdateDateColumn()
+    updatedAt: Date
 }

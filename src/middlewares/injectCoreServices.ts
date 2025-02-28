@@ -40,5 +40,13 @@ export function injectCoreServices(req: Request, res: Response, next: NextFuncti
         })
     }
 
+    res.NotFound = function (detail: any, message: string = "Resource Not Found") {
+        this.status(404).json({
+            message: message,
+            detail,
+            statusCode: 404
+        })
+    }
+
     next();
 }
