@@ -11,7 +11,7 @@ const UserIdSchema = z.object({
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export async function getUserById (req: Request, res: Response) {
+export function getUserById (req: Request, res: Response) {
     const userId = parseInt(req.params.id, 10);
 
     const parse = UserIdSchema.safeParse({id: userId});
