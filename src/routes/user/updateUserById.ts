@@ -31,7 +31,7 @@ export async function updateUserById(req: Request, res: Response) {
 
     const userIdParsed = parsed.data.id;
     if(userLoggedId !== userIdParsed) {
-        res.BadRequest("Forbidden");
+        res.Forbidden("Forbidden");
         return;
     }
 
