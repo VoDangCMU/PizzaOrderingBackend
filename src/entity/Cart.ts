@@ -1,5 +1,6 @@
-import {CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
+import {CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import Users from "@root/entity/Users";
+import CartItem from "@root/entity/CartItem";
 
 export const CART_TABLE_NAME = "carts";
 
@@ -16,4 +17,7 @@ export default class Cart {
 
     @UpdateDateColumn()
     updatedAt: Date
+
+    @OneToMany(() => CartItem, (cartItem) => cartItem.cart, {onDelete: "CASCADE"})
+    cartItems: Array<CartItem>;
 }
