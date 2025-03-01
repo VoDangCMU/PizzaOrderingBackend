@@ -1,9 +1,15 @@
 import {ZodError} from "zod";
+import logger from "@root/logger";
 
-export function extractErrorsFromZod(error: ZodError) {
-    const messages = error.issues.map(e => {
-        return {message: e.message, path: e.path}
-    });
+export function extractErrorsFromZod(error: unknown) {
+    if (error instanceof ZodError) {
+        const messages = error.issues.map(e => {
+            return {message: e.message, path: e.path}
+        });
 
-    return messages;
+        return messages;
+    }
+
+    logger.error(error);
+    return {message: "Unexpected error occurred. Check server logs for more information."};
 }
