@@ -7,7 +7,7 @@ import Cart from "@root/entity/Cart";
 import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
 
-const CreateInvoiceSchema = z.object({
+const UpdateInvoiceSchema = z.object({
     price: z.number(),
     paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true),
 })
@@ -16,18 +16,26 @@ const InvoiceRepository = AppDataSource.getRepository(Invoice);
 const UserRepository = AppDataSource.getRepository(Users);
 const CartRepository = AppDataSource.getRepository(Cart);
 
-export default async function createInvoice(req: Request, res: Response) {
+export default async function updateInvoice(req: Request, res: Response) {
+    const invoiceId = req.params.id;
     const body = req.body;
     const userId = req.body.userId;
     const cartId = req.body.cartId;
 
     try {
-        const parsedBody = CreateInvoiceSchema.safeParse(body);
+        const parsedInvoiceId = z.string().regex(/^\d+$/).transform(Number).safeParse(invoiceId);
+        if (parsedInvoiceId.error) {
+            res.BadRequest(extractErrorsFromZod(parsedInvoiceId.error));
+            return;
+        }
+
+        const parsedBody = UpdateInvoiceSchema.safeParse(body);
+
         if (parsedBody.error) {
             res.BadRequest(parsedBody.error);
             return;
         }
-        const invoice = parsedBody.data;
+        const invoiceBody = parsedBody.data;
 
         const parsedUserId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(userId);
         const parsedCartId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(cartId);
@@ -39,6 +47,16 @@ export default async function createInvoice(req: Request, res: Response) {
 
         if (parsedCartId.error) {
             res.BadRequest(extractErrorsFromZod(parsedCartId));
+            return;
+        }
+
+        const existedInvoice = await InvoiceRepository.findOne({
+            where: {
+                id: parsedInvoiceId.data
+            }
+        })
+        if(!existedInvoice) {
+            res.NotFound("Invoice not found");
             return;
         }
 
@@ -62,27 +80,14 @@ export default async function createInvoice(req: Request, res: Response) {
             return;
         }
 
-        const existedInvoice = await InvoiceRepository.findOne({
-            where: {
-                user: {id: parsedUserId.data},
-                cart: {id: parsedCartId.data}
-            }
-        })
-        if(existedInvoice) {
-            res.BadRequest([{message: "Invoice already exists", detail: existedInvoice}]);
-            return;
-        }
+        existedInvoice.user = existedUser;
+        existedInvoice.cart = existedCart;
+        existedInvoice.price = invoiceBody.price;
+        existedInvoice.paid = invoiceBody.paid;
 
-        const createdInvoice = new Invoice();
+        await InvoiceRepository.save(existedInvoice);
 
-        createdInvoice.user = existedUser;
-        createdInvoice.cart = existedCart;
-        createdInvoice.price = invoice.price;
-        createdInvoice.paid = invoice.paid;
-
-        await InvoiceRepository.save(createdInvoice);
-
-        res.Ok(createdInvoice);
+        res.Ok(existedInvoice);
     }
     catch (err) {
         logger.error(err);
