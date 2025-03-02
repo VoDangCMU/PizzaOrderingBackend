@@ -1,6 +1,6 @@
 import {Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
 import Pizza from "@root/entity/Pizza";
-import Ingredient from "@root/entity/PizzaIngredient";
+import Ingredient from "@root/entity/Ingredients";
 
 export const PIZZA_INGREDIENT_TABLE_NAME = 'pizza_ingredients';
 
