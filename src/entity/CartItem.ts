@@ -26,4 +26,7 @@ export default class CartItem {
 
     @UpdateDateColumn()
     updatedAt: Date
+
+    @Column({default: ""})
+    note: string;
 }
