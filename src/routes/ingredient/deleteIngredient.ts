@@ -3,7 +3,7 @@ import {z} from "zod";
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
 import {AppDataSource} from "@root/data-source";
-import {Ingredients} from "@root/entity/Ingredients";
+import Ingredients from "@root/entity/Ingredients";
 
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
