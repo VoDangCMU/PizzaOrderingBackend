@@ -5,39 +5,46 @@ import User from "@root/entity/Users";
 import {z} from "zod";
 
 const UserIdSchema = z.object({
-    id: z.number(),
+    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
 })
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export async function deleteUserById (req: Request, res: Response) {
+export default async function deleteUserById (req: Request, res: Response) {
     const userLoggedId = Number(req.userID);
-    const userId = parseInt(req.params.id, 10);
+    const userId = req.params.id;
 
-    const parsed = UserIdSchema.safeParse({id: userId});
-    if(parsed.error){
-        res.BadRequest(parsed.error);
+    const parsedId = UserIdSchema.safeParse({id: userId});
+    if(parsedId.error){
+        res.BadRequest(parsedId.error);
         return;
     }
 
-    const userIdParsed = parsed.data.id;
+    const userIdParsed = parsedId.data.id;
     if(userLoggedId !== userIdParsed) {
         res.Forbidden("Forbidden");
         return;
     }
 
-    try {
-        const user = await UserRepository.findOne({
-            where: {id: userIdParsed},
+    UserRepository.findOne({
+        where: {
+            id: userIdParsed
+        },
+    })
+        .then(user => {
+            if (!user) {
+                res.NotFound("User not found");
+                return;
+            }
+            UserRepository.delete(userIdParsed)
+                .then(()=>{
+                    res.Ok("User deleted successfully");
+                })
+                .catch(err => {
+                    logger.error(err);
+                })
         })
-
-        if(!user) {
-            res.BadRequest("User not found");
-            return;
-        }
-        await UserRepository.delete(userIdParsed);
-        res.Ok("User deleted successfully");
-    } catch (error) {
-        logger.error(error);
-    }
+        .catch(err => {
+            logger.error(err);
+        })
 }

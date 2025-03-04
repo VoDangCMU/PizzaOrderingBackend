@@ -6,9 +6,10 @@ import User from "@root/entity/Users";
 import bcrypt from "bcrypt";
 
 const UserUpdateSchema = z.object({
-    id: z.number().optional(),
+    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).optional(),
     username: z.string().optional(),
-    password: z.string().optional(),
+    oldPassword: z.string().optional(),
+    newPassword: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     phone: z.string().optional(),
@@ -19,17 +20,17 @@ const UserUpdateSchema = z.object({
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export async function updateUserById(req: Request, res: Response) {
+export default async function updateUserById(req: Request, res: Response) {
     const userLoggedId = Number(req.userID);
-    const userId = parseInt(req.params.id, 10);
+    const userId = req.params.id;
 
-    const parsed = UserUpdateSchema.safeParse({id: userId});
-    if(parsed.error){
-        res.BadRequest(parsed.error);
+    const parsedId = UserUpdateSchema.safeParse({id: userId});
+    if(parsedId.error){
+        res.BadRequest(parsedId.error);
         return;
     }
 
-    const userIdParsed = parsed.data.id;
+    const userIdParsed = parsedId.data.id;
     if(userLoggedId !== userIdParsed) {
         res.Forbidden("Forbidden");
         return;
@@ -42,22 +43,34 @@ export async function updateUserById(req: Request, res: Response) {
     }
 
     try {
-        const user = await UserRepository.findOne({
-            where: {id: userIdParsed}
+        const updatedUser = await UserRepository.findOne({
+            where: {id: userIdParsed},
+            select: {password: true}
         })
-        if(!user) {
-            res.BadRequest("User not found");
+        if(!updatedUser) {
+            res.NotFound("User not found");
             return;
         }
 
-        if(parsedBody.data.password) {
-            parsedBody.data.password = await bcrypt.hash(parsedBody.data.password, 10);
+        if (parsedBody.data.newPassword) {
+            if (!parsedBody.data.oldPassword) {
+                res.BadRequest("Old password is required to change password");
+                return;
+            }
+
+            const isMatch = await bcrypt.compare(parsedBody.data.oldPassword, updatedUser.password);
+            if (!isMatch) {
+                res.BadRequest("Old password is incorrect");
+                return;
+            }
+
+            updatedUser.password = await bcrypt.hash(parsedBody.data.newPassword, 10);
         }
 
-        Object.assign(user, parsedBody.data);
-        await UserRepository.save(user);
+        Object.assign(updatedUser, parsedBody.data);
+        await UserRepository.save(updatedUser);
 
-        res.Ok("User updated");
+        res.Ok(updatedUser);
     } catch (error) {
         logger.error(error);
     }

@@ -6,30 +6,31 @@ import logger from "@root/logger";
 
 
 const UserIdSchema = z.object({
-    id: z.number(),
+    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
 })
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export function getUserById (req: Request, res: Response) {
+export default function getUserById (req: Request, res: Response) {
     const userId = parseInt(req.params.id, 10);
 
-    const parse = UserIdSchema.safeParse({id: userId});
-    if(parse.error){
-        res.BadRequest(parse.error);
+    const parsedId = UserIdSchema.safeParse({id: userId});
+    if(parsedId.error){
+        res.BadRequest(parsedId.error);
         return;
     }
 
-    const userIdParsed = parse.data.id;
+    const userIdParsed = parsedId.data.id;
 
     UserRepository.findOne({
         where: {id: userIdParsed},
     })
         .then(user => {
             if (!user) {
-                res.BadRequest("User not found");
+                res.NotFound("User not found");
                 return;
             }
+
             res.Ok(user);
         })
         .catch(err => {
