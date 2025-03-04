@@ -80,8 +80,6 @@ export default async function updateInvoice(req: Request, res: Response) {
             return;
         }
 
-        existedInvoice.user = existedUser;
-        existedInvoice.cart = existedCart;
         existedInvoice.price = invoiceBody.price;
         existedInvoice.paid = invoiceBody.paid;
 

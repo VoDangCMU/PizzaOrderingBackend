@@ -9,7 +9,7 @@ import logger from "@root/logger";
 
 const CreateInvoiceSchema = z.object({
     price: z.number(),
-    paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true),
+    paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true).default(false),
 })
 
 const InvoiceRepository = AppDataSource.getRepository(Invoice);
@@ -42,6 +42,17 @@ export default async function createInvoice(req: Request, res: Response) {
             return;
         }
 
+        const existedInvoice = await InvoiceRepository.findOne({
+            where: {
+                user: {id: parsedUserId.data},
+                cart: {id: parsedCartId.data}
+            }
+        })
+        if(existedInvoice) {
+            res.BadRequest("Invoice already exists");
+            return;
+        }
+
         const existedUser = await UserRepository.findOne({
             where: {
                 id: parsedUserId.data
@@ -59,17 +70,6 @@ export default async function createInvoice(req: Request, res: Response) {
         })
         if (!existedCart) {
             res.NotFound("Cart not found");
-            return;
-        }
-
-        const existedInvoice = await InvoiceRepository.findOne({
-            where: {
-                user: {id: parsedUserId.data},
-                cart: {id: parsedCartId.data}
-            }
-        })
-        if(existedInvoice) {
-            res.BadRequest([{message: "Invoice already exists", detail: existedInvoice}]);
             return;
         }
 
