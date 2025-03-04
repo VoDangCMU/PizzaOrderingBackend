@@ -34,7 +34,7 @@ export default function deleteInvoice (req: Request, res: Response) {
 
             InvoiceRepository.delete(invoiceIdParsed)
                 .then(() => {
-                    res.Ok("Invoice deleted");
+                    res.Ok(invoice);
                 })
                 .catch(err => {
                     logger.error(err);
