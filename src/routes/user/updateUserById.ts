@@ -52,7 +52,7 @@ export default async function updateUserById(req: Request, res: Response) {
             return;
         }
 
-        if (parsedBody.data.newPassword) {
+        if (parsedBody.data?.newPassword) {
             if (!parsedBody.data.oldPassword) {
                 res.BadRequest("Old password is required to change password");
                 return;
@@ -65,6 +65,9 @@ export default async function updateUserById(req: Request, res: Response) {
             }
 
             updatedUser.password = await bcrypt.hash(parsedBody.data.newPassword, 10);
+
+            delete parsedBody.data.oldPassword;
+            delete parsedBody.data.newPassword;
         }
 
         Object.assign(updatedUser, parsedBody.data);

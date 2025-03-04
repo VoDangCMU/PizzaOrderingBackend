@@ -38,7 +38,7 @@ export default async function deleteUserById (req: Request, res: Response) {
             }
             UserRepository.delete(userIdParsed)
                 .then(()=>{
-                    res.Ok("User deleted successfully");
+                    res.Ok(user);
                 })
                 .catch(err => {
                     logger.error(err);
