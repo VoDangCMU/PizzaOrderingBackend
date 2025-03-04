@@ -74,6 +74,4 @@ export default async function createIngredient(req: Request, res: Response) {
     } catch (error) {
         logger.error(error);
     }
-
-
 }
