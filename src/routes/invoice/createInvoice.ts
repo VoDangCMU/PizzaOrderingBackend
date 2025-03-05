@@ -8,8 +8,8 @@ import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
 
 const CreateInvoiceSchema = z.object({
-    price: z.number(),
-    paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true),
+    price: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
+    paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true).default(false),
 })
 
 const InvoiceRepository = AppDataSource.getRepository(Invoice);
@@ -42,6 +42,17 @@ export default async function createInvoice(req: Request, res: Response) {
             return;
         }
 
+        const existedInvoice = await InvoiceRepository.findOne({
+            where: {
+                user: {id: parsedUserId.data},
+                cart: {id: parsedCartId.data}
+            }
+        })
+        if(existedInvoice) {
+            res.BadRequest("Invoice already exists");
+            return;
+        }
+
         const existedUser = await UserRepository.findOne({
             where: {
                 id: parsedUserId.data
@@ -62,17 +73,6 @@ export default async function createInvoice(req: Request, res: Response) {
             return;
         }
 
-        const existedInvoice = await InvoiceRepository.findOne({
-            where: {
-                user: {id: parsedUserId.data},
-                cart: {id: parsedCartId.data}
-            }
-        })
-        if(existedInvoice) {
-            res.BadRequest([{message: "Invoice already exists", detail: existedInvoice}]);
-            return;
-        }
-
         const createdInvoice = new Invoice();
 
         createdInvoice.user = existedUser;
@@ -86,5 +86,6 @@ export default async function createInvoice(req: Request, res: Response) {
     }
     catch (err) {
         logger.error(err);
+        res.InternalServerError({});
     }
 }
