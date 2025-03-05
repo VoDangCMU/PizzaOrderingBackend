@@ -41,11 +41,18 @@ export default async function addItemToCart(req: Request, res: Response) {
 
         const existedCart = await CartRepository.findOne({
             where: {id: cartItem.cartID},
-            relations: {cartItems: true}
+            relations: {
+                cartItems: true,
+                user: true
+            }
         })
 
         if (!existedCart) {
             return res.NotFound([{message: `Cart with id ${cartItem.cartID} not found.`}])
+        }
+
+        if (existedCart.user.id != parseInt(req.userID, 10)) {
+            return res.Forbidden([{message: `You cannot access others cart`}])
         }
 
         const existedCartItem = await CartItemRepository.findOne({
