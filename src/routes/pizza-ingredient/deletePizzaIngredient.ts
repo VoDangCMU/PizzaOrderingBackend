@@ -33,13 +33,15 @@ export default function deletePizzaIngredient(req: Request, res: Response) {
 
             PizzaIngredientRepository.delete(pizzaIngredientIdParsed)
                 .then(() =>{
-                    res.Ok("PizzaIngredient deleted");
+                    res.Ok(pizzaIngredient);
                 })
                 .catch(err => {
                     logger.error(err);
+                    res.InternalServerError({});
                 })
         })
         .catch(err => {
             logger.error(err);
+            res.InternalServerError({});
         })
 }

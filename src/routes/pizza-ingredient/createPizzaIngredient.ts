@@ -73,7 +73,6 @@ export default async function createIngredient(req: Request, res: Response) {
         res.Ok(createdPizzaIngredient);
     } catch (error) {
         logger.error(error);
+        res.InternalServerError({});
     }
-
-
 }

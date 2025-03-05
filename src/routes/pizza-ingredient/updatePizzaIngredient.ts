@@ -41,12 +41,12 @@ export default async function updatePizzaIngredient(req: Request, res: Response)
     const pizzaIngredientIdParsed = parsedPizzaIngredient.data.id;
 
     try {
-        const pizzaIngredient = await PizzaIngredientRepository.findOne({
+        const existedPizzaIngredient = await PizzaIngredientRepository.findOne({
             where: {
                 id: pizzaIngredientIdParsed
             }
         })
-        if (!pizzaIngredient) {
+        if (!existedPizzaIngredient) {
             res.NotFound("PizzaIngredient not found");
             return;
         }
@@ -71,25 +71,14 @@ export default async function updatePizzaIngredient(req: Request, res: Response)
             return;
         }
 
-        const duplicatedPizzaIngredient = await PizzaIngredientRepository.findOne({
-            where: {
-                pizza: { id: parsedPizzaId.data },
-                ingredient: { id: parsedIngredientId.data }
-            },
-        });
+        existedPizzaIngredient.ingredient = existedIngredient;
+        existedPizzaIngredient.pizza = existedPizza;
 
-        if(duplicatedPizzaIngredient && duplicatedPizzaIngredient.id !== pizzaIngredientIdParsed){
-            res.BadRequest([{message: "PizzaIngredient already exists", detail: duplicatedPizzaIngredient}]);
-            return;
-        }
-
-        pizzaIngredient.ingredient = existedIngredient;
-        pizzaIngredient.pizza = existedPizza;
-
-        await PizzaIngredientRepository.save(pizzaIngredient);
-        res.Ok(pizzaIngredient);
+        await PizzaIngredientRepository.save(existedPizzaIngredient);
+        res.Ok(existedPizzaIngredient);
     }
     catch(err) {
         logger.error(err);
+        res.InternalServerError({});
     }
 }

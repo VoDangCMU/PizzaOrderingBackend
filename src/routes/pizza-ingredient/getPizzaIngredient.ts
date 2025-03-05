@@ -35,5 +35,6 @@ export default function getPizzaIngredient(req: Request, res: Response) {
         })
         .catch(err => {
             logger.error(err);
+            res.InternalServerError({});
         })
 }
