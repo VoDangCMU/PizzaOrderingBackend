@@ -35,6 +35,6 @@ export default function getInvoice (req: Request, res: Response) {
         })
         .catch(err => {
             logger.error(err);
+            res.InternalServerError({});
         })
-
 }

@@ -8,7 +8,7 @@ import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
 
 const CreateInvoiceSchema = z.object({
-    price: z.number(),
+    price: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
     paid: z.union([z.string(), z.boolean()]).transform((val) => val === "true" || val === true).default(false),
 })
 
@@ -86,5 +86,6 @@ export default async function createInvoice(req: Request, res: Response) {
     }
     catch (err) {
         logger.error(err);
+        res.InternalServerError({});
     }
 }
