@@ -79,5 +79,6 @@ export default async function updatePizzaIngredient(req: Request, res: Response)
     }
     catch(err) {
         logger.error(err);
+        res.InternalServerError({});
     }
 }

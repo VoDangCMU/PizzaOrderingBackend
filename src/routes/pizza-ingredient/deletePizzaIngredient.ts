@@ -37,9 +37,11 @@ export default function deletePizzaIngredient(req: Request, res: Response) {
                 })
                 .catch(err => {
                     logger.error(err);
+                    res.InternalServerError({});
                 })
         })
         .catch(err => {
             logger.error(err);
+            res.InternalServerError({});
         })
 }
