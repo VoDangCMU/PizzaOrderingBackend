@@ -46,5 +46,6 @@ export default async function deleteUserById (req: Request, res: Response) {
         })
         .catch(err => {
             logger.error(err);
+            res.InternalServerError({});
         })
 }

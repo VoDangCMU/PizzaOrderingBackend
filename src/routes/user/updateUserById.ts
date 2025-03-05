@@ -76,5 +76,6 @@ export default async function updateUserById(req: Request, res: Response) {
         res.Ok(updatedUser);
     } catch (error) {
         logger.error(error);
+        res.InternalServerError({});
     }
 }
