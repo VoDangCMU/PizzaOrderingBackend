@@ -10,7 +10,7 @@ const CartItemRepository = AppDataSource.getRepository(CartItem);
 export default async function removeItemFromCart(req: Request, res: Response) {
     let cartItemID;
     try {
-        cartItemID = z.string().regex(/^\d+$/).transform(Number).parse(req.body);
+        cartItemID = z.string().regex(/^\d+$/).transform(Number).parse(req.params.id);
     } catch (error) {
         logger.warn(error);
         return res.BadRequest(extractErrorsFromZod(error));
@@ -26,7 +26,7 @@ export default async function removeItemFromCart(req: Request, res: Response) {
                 existedCartItem.quantity -= 1;
                 await CartItemRepository.save(existedCartItem);
             }
-            await CartItemRepository.delete(existedCartItem);
+            await CartItemRepository.delete(existedCartItem.id);
 
             return res.Ok(existedCartItem);
         }

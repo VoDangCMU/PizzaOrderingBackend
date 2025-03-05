@@ -12,6 +12,6 @@ cart.get("/:id", isAuth, getCart);
 cart.post("/", isAuth, createCart);
 cart.post("/items/", isAuth, addItemToCart);
 cart.delete("/items/:id", removeItemFromCart);
-cart.put("/items/", updateCartItem);
+cart.put("/items/", isAuth, updateCartItem);
 
 module.exports = cart;
