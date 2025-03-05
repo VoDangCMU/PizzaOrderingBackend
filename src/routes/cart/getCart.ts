@@ -37,7 +37,7 @@ export default async function getCart(req: Request, res: Response) {
                 id: cartID,
                 user: {id: userID},
             },
-            relations: {user: true}
+            relations: {user: true, cartItems: {pizza: true}}
         })
 
         if (!cart) {
@@ -45,7 +45,7 @@ export default async function getCart(req: Request, res: Response) {
             return;
         }
 
-        if (cart.user.id !== userID) {
+        if (cart.user.id != userID) {
             res.Forbidden([{message: `You cannot access otthers cart`}])
             return;
         }

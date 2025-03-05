@@ -28,45 +28,59 @@ export default async function addItemToCart(req: Request, res: Response) {
         return res.BadRequest(extractErrorsFromZod(error));
     }
 
-    const cartItem = parsed;
+    try {
+        const cartItem = parsed;
 
-    const existedPizza = await PizzaRepository.findOne({
-        where: {id: cartItem.pizzaID},
-    })
+        const existedPizza = await PizzaRepository.findOne({
+            where: {id: cartItem.pizzaID},
+        })
 
-    if (!existedPizza) {
-        return res.NotFound([{message: `Pizza with id ${cartItem.pizzaID} not found.`}])
-    }
-
-    const existedCart = await CartRepository.findOne({
-        where: {id: cartItem.cartID},
-        relations: {cartItems: true}
-    })
-
-    if (!existedCart) {
-        return res.NotFound([{message: `Cart with id ${cartItem.cartID} not found.`}])
-    }
-
-    const existedCartItem = await CartItemRepository.findOne({
-        where: {pizza: {id: cartItem.pizzaID}, cart: {id: cartItem.cartID}},
-        relations: {
-            pizza: true, cart: {cartItems: true}
+        if (!existedPizza) {
+            return res.NotFound([{message: `Pizza with id ${cartItem.pizzaID} not found.`}])
         }
-    });
 
-    if (existedCartItem) {
-        existedCartItem.quantity += 1;
-        await CartItemRepository.save(existedCartItem);
+        const existedCart = await CartRepository.findOne({
+            where: {id: cartItem.cartID},
+            relations: {
+                cartItems: true,
+                user: true
+            }
+        })
 
-        return res.Ok(existedCartItem);
+        if (!existedCart) {
+            return res.NotFound([{message: `Cart with id ${cartItem.cartID} not found.`}])
+        }
+
+        if (existedCart.user.id != parseInt(req.userID, 10)) {
+            return res.Forbidden([{message: `You cannot access others cart`}])
+        }
+
+        const existedCartItem = await CartItemRepository.findOne({
+            where: {pizza: {id: cartItem.pizzaID}, cart: {id: cartItem.cartID}},
+            relations: {
+                pizza: true, cart: {cartItems: true}
+            }
+        });
+
+        if (existedCartItem) {
+            existedCartItem.quantity += 1;
+            await CartItemRepository.save(existedCartItem);
+
+            return res.Ok(existedCartItem);
+        }
+
+        const createdCartItem = new CartItem();
+        createdCartItem.quantity = 1;
+        createdCartItem.cart = existedCart;
+        createdCartItem.pizza = existedPizza;
+        createdCartItem.size = cartItem.size;
+        createdCartItem.note = cartItem.note || "";
+
+        await CartItemRepository.save(createdCartItem);
+
+        res.Ok(createdCartItem);
+    } catch (e) {
+        logger.error(e);
+        res.InternalServerError({});
     }
-
-    const createdCartItem = new CartItem();
-    createdCartItem.quantity = 1;
-    createdCartItem.cart = existedCart;
-    createdCartItem.pizza = existedPizza;
-    createdCartItem.size = cartItem.size;
-    createdCartItem.note = cartItem.note || "";
-
-    res.Ok(createdCartItem);
 }
