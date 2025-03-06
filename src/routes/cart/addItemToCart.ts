@@ -51,7 +51,7 @@ export default async function addItemToCart(req: Request, res: Response) {
             return res.NotFound([{message: `Cart with id ${cartItem.cartID} not found.`}])
         }
 
-        if (existedCart.user.id != parseInt(req.userID, 10)) {
+        if (existedCart.user.id != req.userID) {
             return res.Forbidden([{message: `You cannot access others cart`}])
         }
 

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {Request, Response} from 'express';
 import {injectCoreServices} from "@root/middlewares/injectCoreServices";
 import env from "@root/env";
 import {AppDataSource} from "@root/data-source";
@@ -20,11 +20,12 @@ app.use(injectCoreServices);
 app.use(express.json());
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 
-app.get("/health-check", (req, res) => {
+app.get("/health-check", (req: Request, res: Response) => {
     res.Ok("Work")
 })
 
-app.get("/health-check-with-token", isAuth, (req, res) => {
+app.get("/health-check-with-token", isAuth, (req: Request, res: Response) => {
+    logger.info("Logged in as", req.currentUser);
     res.Ok("Work")
 })
 
