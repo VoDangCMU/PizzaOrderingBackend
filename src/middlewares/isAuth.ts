@@ -2,6 +2,10 @@ import {NextFunction, Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import env from "@root/env";
 import logger from "@root/logger";
+import {AppDataSource} from "@root/data-source";
+import Users from "@root/entity/Users";
+
+const UserRepository = AppDataSource.getRepository(Users);
 
 export default function isAuth(req: Request, res: Response, next: NextFunction) {
     const headerToken = req.headers.authorization;
@@ -24,10 +28,26 @@ export default function isAuth(req: Request, res: Response, next: NextFunction) 
             return;
         }
 
-        logger.debug("Logged in with ", decoded)
-        req.username = decoded.username;
-        req.userID = decoded.userID;
+        logger.debug("Token Payload ", decoded);
 
-        next();
+        UserRepository.findOne({
+            where: {id: parseInt(decoded.userID, 10)},
+        })
+            .then(user => {
+                if (!user) {
+                    return res.NotFound([{message: `User with ID ${decoded.userID} not found`}]);
+                }
+
+                req.username = decoded.username;
+                req.userID = parseInt(decoded.userID, 10);
+                req.currentUser = user;
+
+                next();
+            })
+            .catch(err => {
+                logger.error(err);
+                res.InternalServerError({});
+            })
+
     });
 }

@@ -36,7 +36,7 @@ export default async function updateCartItem(req: Request, res: Response) {
             return res.NotFound([{message: `Cart with id ${newCartItem.id} not found`}]);
         }
 
-        if (existedCartItem.cart.user.id != parseInt(req.userID, 10)) {
+        if (existedCartItem.cart.user.id != req.userID) {
             return res.Forbidden([{message: `You cannot access others cart`}])
         }
 
