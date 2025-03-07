@@ -9,4 +9,7 @@ export default class PizzaCategories {
 
     @Column()
     name: string;
+
+    @Column({default: ""})
+    description: string;
 }

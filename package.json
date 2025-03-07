@@ -43,6 +43,7 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
     "migration:generate": "ts-node -r tsconfig-paths/register ./src/runner/migration_generate.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
     "db:create": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create --initialDatabase postgres",
     "db:drop": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop",
     "seed:run": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run",

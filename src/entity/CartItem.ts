@@ -29,4 +29,7 @@ export default class CartItem {
 
     @Column({default: ""})
     note: string;
+
+    @Column({default: "Thin", enum: ['Thin', 'Thick']})
+    crustType: string;
 }

@@ -9,4 +9,7 @@ export default class Ingredients {
 
     @Column()
     name: string;
+
+    @Column({default: ""})
+    description: string;
 }

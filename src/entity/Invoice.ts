@@ -15,7 +15,7 @@ export default class Invoice {
     @Column()
     price: number;
 
-    @Column()
+    @Column({default: false})
     paid: boolean;
 
     @ManyToOne(() => Users, {onDelete: "CASCADE"})
