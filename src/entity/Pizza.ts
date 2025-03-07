@@ -1,4 +1,12 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from 'typeorm';
 import PizzaCategories from "@root/entity/PizzaCategories";
 import PizzaCrust from "@root/entity/PizzaCrust";
 import PizzaExtras from "@root/entity/PizzaExtras";
@@ -32,4 +40,10 @@ export default class Pizza {
 
     @OneToMany(() => PizzaSize, (pizzaSize) => pizzaSize.pizza, {onDelete: "CASCADE"})
     sizes: Array<PizzaSize>;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

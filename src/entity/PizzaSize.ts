@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Pizza from "@root/entity/Pizza";
 
 export const PIZZASIZE_TABLE_NAME = "PizzaSize";
@@ -21,4 +21,10 @@ export default class PizzaSize {
 
     @ManyToOne(() => Pizza, {onDelete: "CASCADE"})
     pizza: Pizza;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

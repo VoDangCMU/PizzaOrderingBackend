@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import Pizza from "@root/entity/Pizza";
 import Ingredient from "@root/entity/Ingredients";
 
@@ -17,4 +17,10 @@ export default class PizzaIngredient {
 
     @Column({default: ""})
     description: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
