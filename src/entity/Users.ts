@@ -31,6 +31,9 @@ export default class Users {
     @Column()
     address: string
 
+    @Column({default: "https://i.imgur.com/oKuKLoh.png"})
+    avatar: string
+
     @CreateDateColumn()
     createdAt: Date
 

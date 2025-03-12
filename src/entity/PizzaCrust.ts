@@ -1,5 +1,6 @@
 import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Pizza from "@root/entity/Pizza";
+import PIZZA_CRUST_TYPE from "@root/schemas/CONST/PIZZA_CRUST_TYPE";
 
 export const PIZZACRUST_TABLE_NAME = "pizza_crust";
 
@@ -8,11 +9,11 @@ export default class PizzaCrust {
     @PrimaryGeneratedColumn({type: 'bigint'})
     id: number;
 
-    @Column({default: 'Thin'})
+    @Column({default: PIZZA_CRUST_TYPE[0], enum: PIZZA_CRUST_TYPE})
     crust: string;
 
     @Column({
-        default: "https://delivery.pizza4ps.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2F4ps_strapi%2FPizza_Combo_195_K_38158f7caf%2FPizza_Combo_195_K_38158f7caf.jpg&w=1920&q=75",
+        default: "https://i.imgur.com/dlk37Sb.jpeg",
     })
     image: string;
 

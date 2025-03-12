@@ -10,6 +10,9 @@ export default class Ingredients {
     @Column()
     name: string;
 
+    @Column({default: "https://i.imgur.com/JvjEmTP.png"})
+    image: string;
+
     @Column({default: ""})
     description: string;
 
