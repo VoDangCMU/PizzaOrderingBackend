@@ -5,7 +5,7 @@ import logger from "@root/logger";
 
 const testOnlyRouter = express.Router();
 
-testOnlyRouter.get('/prune', isOnTesting, (req: Request, res: Response)=> {
+testOnlyRouter.get('/prune-db', isOnTesting, (req: Request, res: Response)=> {
     const entities = AppDataSource.entityMetadatas;
     const tableNames = entities.map((entity) => `"${entity.tableName}"`).join(", ");
     logger.info(`TRUNCATE ${tableNames} CASCADE;`)
