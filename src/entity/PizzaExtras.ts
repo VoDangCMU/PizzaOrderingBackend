@@ -1,5 +1,6 @@
 import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Pizza from "@root/entity/Pizza";
+import PIZZA_SIZE from "@root/schemas/CONST/PIZZA_SIZE";
 
 export const PIZZAEXTRAS_TABLE_NAME = "pizza_extras";
 
@@ -8,7 +9,7 @@ export default class PizzaExtras {
     @PrimaryGeneratedColumn({type: 'bigint'})
     id: number;
 
-    @Column({default: 'S', enum: ['S', 'M', 'L', 'XL', 'XXL']})
+    @Column({default: PIZZA_SIZE[0], enum: PIZZA_SIZE})
     size: string;
 
     @Column({default: 'Extra Cheese'})
@@ -18,7 +19,7 @@ export default class PizzaExtras {
     price: number;
 
     @Column({
-        default: "https://delivery.pizza4ps.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2F4ps_strapi%2FPizza_Combo_195_K_38158f7caf%2FPizza_Combo_195_K_38158f7caf.jpg&w=1920&q=75",
+        default: "https://i.imgur.com/JB4UIiM.png",
     })
     image: string;
 

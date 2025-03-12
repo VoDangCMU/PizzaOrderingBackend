@@ -1,21 +1,25 @@
 import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Pizza from "@root/entity/Pizza";
+import PIZZA_SIZE from "@root/schemas/CONST/PIZZA_SIZE";
 
-export const PIZZAOUTERCRUST_TABLE_NAME = "pizza_outer_crust";
+export const PIZZA_OUTERCRUST_TABLE_NAME = "pizza_outer_crust";
 
-@Entity({ name: PIZZAOUTERCRUST_TABLE_NAME })
+@Entity({ name: PIZZA_OUTERCRUST_TABLE_NAME })
 export default class PizzaOuterCrust {
     @PrimaryGeneratedColumn({type: 'bigint'})
     id: number;
 
-    @Column({default: 'S', enum: ['S', 'M', 'L', 'XL', 'XXL']})
+    @Column({default: PIZZA_SIZE[0], enum: PIZZA_SIZE})
     size: string;
 
     @Column({default: 1000, type: 'bigint'})
     price: number;
 
+    @Column()
+    name: string;
+
     @Column({
-        default: "https://delivery.pizza4ps.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2F4ps_strapi%2FPizza_Combo_195_K_38158f7caf%2FPizza_Combo_195_K_38158f7caf.jpg&w=1920&q=75",
+        default: "https://i.imgur.com/JB4UIiM.png",
     })
     image: string;
 
