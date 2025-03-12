@@ -41,7 +41,7 @@ export default async function updateCartItem(req: Request, res: Response) {
         }
 
         existedCartItem.quantity = newCartItem.quantity;
-        existedCartItem.size = newCartItem.size;
+        // existedCartItem.size = newCartItem.size;
         existedCartItem.note = newCartItem.note || "";
 
         await CartItemRepository.save(existedCartItem);

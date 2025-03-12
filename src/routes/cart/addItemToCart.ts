@@ -73,7 +73,7 @@ export default async function addItemToCart(req: Request, res: Response) {
         createdCartItem.quantity = 1;
         createdCartItem.cart = existedCart;
         createdCartItem.pizza = existedPizza;
-        createdCartItem.size = cartItem.size;
+        // createdCartItem.size = cartItem.size;
         createdCartItem.note = cartItem.note || "";
 
         await CartItemRepository.save(createdCartItem);
