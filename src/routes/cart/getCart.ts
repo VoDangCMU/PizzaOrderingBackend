@@ -1,30 +1,20 @@
 import {Request, Response} from "express";
-import {z} from "zod";
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
 import {AppDataSource} from "@root/data-source";
 import Cart from "@root/entity/Cart";
+import NUMBER from "@root/schemas/Number";
 
 const CartRepository = AppDataSource.getRepository(Cart);
 
 export default async function getCart(req: Request, res: Response) {
-    const _userID = req.userID;
+    const userID = req.userID;
     const _cartID = req.params.id;
-    const NumberSchema = z.string().regex(/^\d+$/).transform(Number);
 
-    let userID, cartID;
-
-    try {
-        userID = NumberSchema.parse(_userID);
-    } catch (e) {
-        logger.warn(`Error: ${e}`);
-
-        res.BadRequest(extractErrorsFromZod(e));
-        return;
-    }
+    let cartID;
 
     try {
-        cartID = NumberSchema.parse(_cartID);
+        cartID = NUMBER.parse(_cartID);
     } catch (e) {
         logger.warn(`Error: ${e}`);
         res.BadRequest(extractErrorsFromZod(e));

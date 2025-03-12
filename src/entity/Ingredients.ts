@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column} from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
 
 export const INGREDIENT_TABLE_NAME = 'ingredients';
 
@@ -9,4 +9,16 @@ export default class Ingredients {
 
     @Column()
     name: string;
+
+    @Column({default: "https://i.imgur.com/JvjEmTP.png"})
+    image: string;
+
+    @Column({default: ""})
+    description: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
