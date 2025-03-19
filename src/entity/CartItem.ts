@@ -32,14 +32,14 @@ export default class CartItem {
     note: string;
 
     @ManyToOne(() => PizzaCrust, {onDelete: "CASCADE", nullable: true})
-    crustType: PizzaCrust;
+    crust: PizzaCrust | null;
 
     @ManyToOne(() => PizzaExtras, {onDelete: "CASCADE", nullable: true})
-    extra: PizzaExtras;
+    extra: PizzaExtras | null;
 
     @ManyToOne(() => PizzaSize, {onDelete: "CASCADE", nullable: true})
-    size: PizzaSize
+    size: PizzaSize | null;
 
     @ManyToOne(() => PizzaOuterCrust, {onDelete: "CASCADE", nullable: true})
-    outerCrust: PizzaOuterCrust;
+    outerCrust: PizzaOuterCrust | null;
 }
