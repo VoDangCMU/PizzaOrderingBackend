@@ -2,6 +2,7 @@ import express, {Request, Response} from "express";
 import isOnTesting from "@root/middlewares/isOnTesting";
 import {AppDataSource} from "@root/data-source";
 import logger from "@root/logger";
+import registerAdmin from "@root/routes/test-only/register-admin";
 
 const testOnlyRouter = express.Router();
 
@@ -16,5 +17,7 @@ testOnlyRouter.get('/prune-db', isOnTesting, (req: Request, res: Response)=> {
             res.Ok({})
         });
 });
+
+testOnlyRouter.post('/register-admin', isOnTesting, registerAdmin);
 
 module.exports = testOnlyRouter;
