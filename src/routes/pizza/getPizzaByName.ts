@@ -12,7 +12,7 @@ const PizzaRepository = AppDataSource.getRepository(Pizza);
 
 export default function getPizzaByName(req: Request, res: Response) {
     const name = req.query.name;
-    const parsed = PizzaSchema.safeParse(name);
+    const parsed = PizzaSchema.safeParse({name});
 
     if(parsed.error)
     {
@@ -30,7 +30,7 @@ export default function getPizzaByName(req: Request, res: Response) {
         .then(pizza =>{
             if(!pizza)
             {
-                res.NotFound("Pizza Not Found");
+                res.NotFound([{message: "Pizza Not Found"}]);
                 return;
             }
 

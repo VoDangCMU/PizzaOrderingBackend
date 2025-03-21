@@ -9,8 +9,8 @@ import getPizzaByName from "@root/routes/pizza/getPizzaByName";
 
 const pizza = Router();
 
-pizza.get("/:id", getPizza);
-pizza.get("/", getPizzaByName);
+pizza.get("/getByID/:id", getPizza);
+pizza.get("/getByName", getPizzaByName);
 pizza.get("/",isAuth, getAllPizzas);
 pizza.post("/", createPizza);
 pizza.delete("/:id", deletePizza);
