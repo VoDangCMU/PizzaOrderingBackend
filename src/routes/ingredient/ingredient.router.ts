@@ -5,11 +5,12 @@ import deleteIngredient from "@root/routes/ingredient/deleteIngredient";
 import updateIngredient from "@root/routes/ingredient/updateIngredient";
 import isAuth from "@root/middlewares/isAuth";
 import getAllIngredients from "@root/routes/ingredient/getAllIngredients";
+import isAdmin from "@root/middlewares/isAdmin";
 
 const ingredient = Router();
 
 ingredient.get("/:id", getIngredient);
-ingredient.get("/", isAuth, getAllIngredients);
+ingredient.get("/", isAuth, isAdmin, getAllIngredients);
 ingredient.post("/", createIngredient);
 ingredient.delete("/:id", deleteIngredient);
 ingredient.put("/", updateIngredient);

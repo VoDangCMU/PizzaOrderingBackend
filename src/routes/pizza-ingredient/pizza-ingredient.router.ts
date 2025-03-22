@@ -5,12 +5,13 @@ import updatePizzaIngredient from "@root/routes/pizza-ingredient/updatePizzaIngr
 import deletePizzaIngredient from "@root/routes/pizza-ingredient/deletePizzaIngredient";
 import getAllPizzaIngredients from "@root/routes/pizza-ingredient/getAllPizzaIngredients";
 import isAuth from "@root/middlewares/isAuth";
+import isAdmin from "@root/middlewares/isAdmin";
 
 
 const pizzaIngredient = express.Router();
 pizzaIngredient.post("/", createPizzaIngredient);
 pizzaIngredient.get("/:id", getPizzaIngredient);
-pizzaIngredient.get("/", isAuth, getAllPizzaIngredients);
+pizzaIngredient.get("/", isAuth, isAdmin, getAllPizzaIngredients);
 pizzaIngredient.put("/:id", updatePizzaIngredient);
 pizzaIngredient.delete("/:id", deletePizzaIngredient);
 

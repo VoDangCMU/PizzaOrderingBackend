@@ -5,11 +5,12 @@ import deletePizzaCategory from "@root/routes/pizza-category/deletePizzaCategory
 import updatePizzaCategory from "@root/routes/pizza-category/updatePizzaCategory";
 import isAuth from "@root/middlewares/isAuth";
 import getAllPizzaCategories from "@root/routes/pizza-category/getAllPizzaCategories";
+import isAdmin from "@root/middlewares/isAdmin";
 
 const pizzaCategory = Router();
 
 pizzaCategory.get("/:id", getPizzaCategory);
-pizzaCategory.get("/", isAuth, getAllPizzaCategories);
+pizzaCategory.get("/", isAuth, isAdmin, getAllPizzaCategories);
 pizzaCategory.post("/", createPizzaCategory);
 pizzaCategory.delete("/:id", deletePizzaCategory);
 pizzaCategory.put("/", updatePizzaCategory);
