@@ -4,10 +4,12 @@ import {AppDataSource} from "@root/data-source";
 import Pizza from "@root/entity/Pizza";
 import logger from "@root/logger";
 import PizzaOuterCrust from "@root/entity/PizzaOuterCrust";
+import {extractErrorsFromZod} from "@root/utils";
 
 const UpdatePizzaOuterCrustSchema = z.object({
+    pizzaId: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
     name: z.string(),
-    size: z.string(),
+    size: z.enum(['S', 'M', 'L', 'XL', 'XXL']),
     price: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
     image: z.string(),
 })
@@ -17,12 +19,10 @@ const PizzaRepository = AppDataSource.getRepository(Pizza);
 
 export default async function updatePizzaOuterCrustById(req: Request, res: Response) {
     const pizzaOuterCrustId = req.params.id;
-    const pizzaId = req.body.pizzaId;
     const pizzaOuterCrustBody = req.body;
 
     try{
         const parsedPizzaOuterCrustId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(pizzaOuterCrustId);
-        const parsedPizzaId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(pizzaId);
         const parsedBody = UpdatePizzaOuterCrustSchema.safeParse(pizzaOuterCrustBody);
 
         if(parsedBody.error)
@@ -34,17 +34,10 @@ export default async function updatePizzaOuterCrustById(req: Request, res: Respo
 
         const body = parsedBody.data;
 
-        if(parsedPizzaId.error)
-        {
-            logger.warn(parsedPizzaId.error);
-            res.BadRequest(parsedPizzaId.error);
-            return;
-        }
-
         if(parsedPizzaOuterCrustId.error)
         {
             logger.warn(parsedPizzaOuterCrustId.error);
-            res.BadRequest(parsedPizzaOuterCrustId.error);
+            res.BadRequest(extractErrorsFromZod(parsedPizzaOuterCrustId.error));
             return;
         }
 
@@ -62,7 +55,7 @@ export default async function updatePizzaOuterCrustById(req: Request, res: Respo
 
         const existedPizza = await PizzaRepository.findOne({
             where: {
-                id: parsedPizzaId.data,
+                id: body.pizzaId,
             }
         })
 
