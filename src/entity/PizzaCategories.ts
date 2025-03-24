@@ -7,7 +7,7 @@ export default class PizzaCategories {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @Column({default: ""})
