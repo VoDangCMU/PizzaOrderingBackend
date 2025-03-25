@@ -10,16 +10,25 @@ import env from "@root/env";
 import Pizza from "@root/entity/Pizza";
 import Ingredients from "@root/entity/Ingredients";
 import PizzaIngredient from "@root/entity/PizzaIngredient";
+import PizzaSize from "@root/entity/PizzaSize";
+// import Cart from "@root/entity/Cart";
 
 const PizzaCategoryRepository = AppDataSource.getRepository(PizzaCategories);
 const PizzaRepository = AppDataSource.getRepository(Pizza);
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
+const PizzaSizeRepository = AppDataSource.getRepository(PizzaSize);
+// const CartRepository = AppDataSource.getRepository(Cart);
 
 const dataPath = path.join(__dirname, 'pizza_sales.csv');
 
 export type TPizzaSize = 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL';
 
+// Key is order_id from file
+// Value is cart id
+export interface IOrderFlag {
+    [key: string]: number
+}
 export interface IRawPizza {
     pizza_id: string;
     order_id: string;
@@ -249,6 +258,11 @@ const PIZZAS = [
     }
 ];
 
+const orderFlags: IOrderFlag = {
+    'test': 1,
+    'test2': 2
+}
+
 export function transformRawData(data: IRawPizza): IPizza {
     return {
         pizza_id: parseInt(data.pizza_id, 10),
@@ -301,6 +315,7 @@ export async function mockPizza() {
         pizza.category = category!;
         pizza.name = _pizza.pizza_name;
         pizza.description = faker.food.description();
+        pizza.unitPrice = _pizza.unit_price;
 
         await PizzaRepository.upsert(pizza, {
             conflictPaths: {name: true},
@@ -312,7 +327,21 @@ export async function mockPizza() {
 
             await mockPizzaIngredients(pizza, ingredient)
         }
+
+        for (let _size of ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'] as Array<TPizzaSize>) {
+            await mockPizzaSize(pizza, _size)
+        }
     }
+}
+async function mockPizzaSize(pizza: Pizza, size: TPizzaSize) {
+    const pizzaSize = new PizzaSize();
+
+    pizzaSize.size = size;
+    pizzaSize.pizza = pizza;
+
+    await PizzaSizeRepository.insert(pizzaSize)
+
+    return pizzaSize;
 }
 async function mockIngredients(name: string) {
     const ingredient = new Ingredients();
@@ -338,11 +367,18 @@ async function mockPizzaIngredients(pizza: Pizza, ingredient: Ingredients) {
 
     return pizzaIngredient;
 }
+// async function
 export function mock() {
     fs.createReadStream(dataPath)
         .pipe(csv())
         .on('data', (data: IRawPizza) => {
-            // const pizzaData = transformRawData(data);
+            const pizzaData = transformRawData(data);
+
+            const cartID = orderFlags[pizzaData.order_id];
+
+            if (!cartID) {
+
+            }
         })
         .on('end', () => {
             logger.info("Not yet implemented");

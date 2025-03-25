@@ -8,6 +8,7 @@ import PizzaCategories from "@root/entity/PizzaCategories";
 
 const CreatePizzaParamsSchema = z.object({
     name: z.string(),
+    unitPrice: z.string().transform((val) => Number(`${val}`.replace(",", "."))).pipe(z.number()),
     categoryID: z.string().regex(/^\d+$/).transform(Number),
 })
 
@@ -51,6 +52,7 @@ export default async function createPizza(req: Request, res: Response) {
 
         createdPizza.name = pizza.name;
         createdPizza.category = existedCategory;
+        createdPizza.unitPrice = pizza.unitPrice;
 
         await PizzaRepository.save(createdPizza);
 

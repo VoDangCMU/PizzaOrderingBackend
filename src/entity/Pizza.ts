@@ -30,6 +30,9 @@ export default class Pizza {
     @Column({default: ""})
     description: string;
 
+    @Column({default: 10, type: "decimal"})
+    unitPrice: number;
+
     @OneToMany(() => PizzaCrust, (pizzaCrust) => pizzaCrust.pizza, {onDelete: "CASCADE"})
     crusts: Array<PizzaCrust>;
 

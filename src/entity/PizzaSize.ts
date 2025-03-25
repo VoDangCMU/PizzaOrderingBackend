@@ -2,7 +2,7 @@ import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Upd
 import Pizza from "@root/entity/Pizza";
 import PIZZA_SIZE from "@root/schemas/CONST/PIZZA_SIZE";
 
-export const PIZZASIZE_TABLE_NAME = "PizzaSize";
+export const PIZZASIZE_TABLE_NAME = "pizza_sizes";
 
 @Entity({ name: PIZZASIZE_TABLE_NAME })
 export default class PizzaSize {
