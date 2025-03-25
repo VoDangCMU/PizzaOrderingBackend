@@ -12,6 +12,7 @@ import PizzaCrust from "@root/entity/PizzaCrust";
 import PizzaExtras from "@root/entity/PizzaExtras";
 import PizzaImages from "@root/entity/PizzaImages";
 import PizzaSize from "@root/entity/PizzaSize";
+import PizzaIngredient from "@root/entity/PizzaIngredient";
 
 export const PIZZA_TABLE_NAME = "pizzas";
 
@@ -20,7 +21,7 @@ export default class Pizza {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @ManyToOne(() => PizzaCategories, {onDelete: "CASCADE"})
@@ -28,6 +29,9 @@ export default class Pizza {
 
     @Column({default: ""})
     description: string;
+
+    @Column({default: 10, type: "decimal"})
+    unitPrice: number;
 
     @OneToMany(() => PizzaCrust, (pizzaCrust) => pizzaCrust.pizza, {onDelete: "CASCADE"})
     crusts: Array<PizzaCrust>;
@@ -40,6 +44,9 @@ export default class Pizza {
 
     @OneToMany(() => PizzaSize, (pizzaSize) => pizzaSize.pizza, {onDelete: "CASCADE"})
     sizes: Array<PizzaSize>;
+
+    @OneToMany(() => PizzaIngredient, (pizzaIngredient) => pizzaIngredient.pizza, {onDelete: "CASCADE"})
+    pizzaIngredients: Array<PizzaIngredient>;
 
     @CreateDateColumn()
     createdAt: Date;

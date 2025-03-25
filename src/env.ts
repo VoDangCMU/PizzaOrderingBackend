@@ -28,6 +28,7 @@ const env_schema = z.object({
     DB_PASSWORD: z.string(),
     DB_DATABASE: z.string(),
     JWT_SECRET: z.string(),
+    BCRYPT_HASH_ROUND: z.string().regex(/^\d+$/).transform(Number).optional().default('10')
 })
 
 const env = env_schema.parse(process.env);

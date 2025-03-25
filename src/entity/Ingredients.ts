@@ -7,7 +7,7 @@ export default class Ingredients {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @Column({default: "https://i.imgur.com/JvjEmTP.png"})
