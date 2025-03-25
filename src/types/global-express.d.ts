@@ -1,3 +1,17 @@
+declare type Users = {
+    id: number
+    username: string
+    password: string
+    dateOfBirth: Date
+    firstName: string
+    lastName: string
+    phone: string
+    email: string
+    address: string
+    createdAt: Date
+    updatedAt: Date
+}
+
 declare namespace Express {
     export interface Response {
         Ok(data: any): void
@@ -9,7 +23,8 @@ declare namespace Express {
     }
 
     export interface Request {
-        userID: string
+        userID: number
         username: string
+        currentUser: Users
     }
 }

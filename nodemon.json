@@ -2,7 +2,7 @@
   "watch": [],
   "ext": "ts,js",
   "ignore": ["*.test.ts", "./dist"],
-  "delay": "3000",
+  "delay": "1000",
   "execMap": {
     "ts": "ts-node"
   },

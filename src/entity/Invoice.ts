@@ -1,4 +1,4 @@
-import {Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Users from "@root/entity/Users";
 import Cart from "@root/entity/Cart";
 
@@ -15,13 +15,13 @@ export default class Invoice {
     @Column()
     price: number;
 
-    @Column()
+    @Column({default: false})
     paid: boolean;
 
     @ManyToOne(() => Users, {onDelete: "CASCADE"})
     user: Users;
 
-    @OneToOne(() => Cart, {onDelete: "CASCADE"})
+    @ManyToOne(() => Cart, {onDelete: "CASCADE"})
     cart: Cart;
 
     @CreateDateColumn()

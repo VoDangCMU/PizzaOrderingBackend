@@ -5,6 +5,7 @@ import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
+import env from "@root/env";
 
 const RegisterParamsSchema = z.object({
     username: z.string(),
@@ -49,7 +50,7 @@ export default function register(req: Request, res: Response): void {
             user.email = userData.email;
             user.address = userData.address;
             user.phone = userData.phone;
-            user.password = bcrypt.hashSync(userData.password, 10);
+            user.password = bcrypt.hashSync(userData.password, env.BCRYPT_HASH_ROUND);
             user.firstName = userData.firstName;
             user.lastName = userData.lastName;
             user.dateOfBirth = new Date(userData.dateOfBirth);

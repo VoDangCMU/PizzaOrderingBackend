@@ -1,4 +1,5 @@
 import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm"
+import USER_ROLE from "@root/schemas/CONST/USER_ROLE";
 
 export const USER_TABLE_NAME = "users";
 
@@ -30,6 +31,12 @@ export default class Users {
 
     @Column()
     address: string
+
+    @Column({default: "https://i.imgur.com/oKuKLoh.png"})
+    avatar: string
+
+    @Column({default: USER_ROLE[0], enum: USER_ROLE})
+    role: string
 
     @CreateDateColumn()
     createdAt: Date

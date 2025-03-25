@@ -15,6 +15,7 @@
     "chalk": "^5.4.1",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
+    "csv-parser": "^3.2.0",
     "decomment": "^0.9.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -43,15 +44,19 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
     "migration:generate": "ts-node -r tsconfig-paths/register ./src/runner/migration_generate.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
     "db:create": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create --initialDatabase postgres",
     "db:drop": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop",
     "seed:run": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run",
     "seed:create": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:create",
     "start:pm2": "cross-env ENV=production pm2 start ./dist/index.js --name pizza_backend",
     "build:docker": "docker build -t vodang/pizza_backend .",
-    "start:docker": "docker run -d -it --name pizza_backend vodang/pizza_backend"
+    "start:docker": "docker run -d -it --name pizza_backend vodang/pizza_backend",
+    "start:test": "cross-env ENV=testing nodemon --config nodemon.json",
+    "mock": "cross-env ENV=development ts-node ./src/runner/mock.ts"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "@types/jest": "^29.5.14"
   }
 }
