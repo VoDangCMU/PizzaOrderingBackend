@@ -10,7 +10,7 @@ const user = express.Router();
 
 user.get("/get-by-id/:id", getUserById);
 user.get("/get-all", isAuth, isAdmin, getAllUsers);
-user.put("/:id", isAuth, updateUserById);
-user.delete("/:id", isAuth, deleteUserById);
+user.put("/update/", isAuth, updateUserById);
+user.delete("/delete/:id", isAuth, deleteUserById);
 
 module.exports = user;
