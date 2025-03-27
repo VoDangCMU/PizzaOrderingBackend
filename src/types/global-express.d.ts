@@ -18,7 +18,7 @@ declare namespace Express {
         BadRequest(detail: any, message: string = "Bad Request"): void
         Unauthorized(detail: any, message: string = "Unauthorized"): void
         Forbidden(detail: any, message: string = "Forbidden"): void
-        InternalServerError(detail: any, message: string = "Internal Server Error"): void
+        InternalServerError(error: any, message: string = "Internal Server Error"): void
         NotFound(detail: any, message: string = "Resource Not Found"): void
     }
 

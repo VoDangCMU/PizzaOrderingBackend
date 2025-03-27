@@ -42,6 +42,10 @@ app.get("/health-check-with-token", isAuth, (req: Request, res: Response) => {
     res.Ok("Work")
 })
 
+app.get("/health-check-trace-id", (req: Request, res: Response) => {
+    return res.InternalServerError({hello: "world"})
+})
+
 const routesPath = path.resolve(__dirname, 'routes');
 const routes: Array<string> = fs
     .readdirSync(routesPath)

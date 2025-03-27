@@ -14,6 +14,11 @@ export function extractErrorsFromZod(error: unknown) {
     return {message: "Unexpected error occurred. Check server logs for more information."};
 }
 
+
+export function randomUUID() {
+    return crypto.randomUUID();
+}
+
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -1,72 +1,72 @@
 import {Request, Response} from "express";
 import Users from "@root/entity/Users";
-import bcrypt from "bcrypt";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
 import env from "@root/env";
+import bcrypt from "bcrypt";
 
 const RegisterParamsSchema = z.object({
-    username: z.string(),
-    password: z.string(),
-    dateOfBirth: z.union([z.string().transform(Date), z.date()]),
-    firstName: z.string(),
-    lastName: z.string(),
-    phone: z.string(),
-    email: z.string().email(),
-    address: z.string(),
+	username: z.string(),
+	password: z.string(),
+	dateOfBirth: z.union([z.string().transform(Date), z.date()]),
+	firstName: z.string(),
+	lastName: z.string(),
+	phone: z.string(),
+	email: z.string().email(),
+	address: z.string(),
 })
 
 const UserRepository = AppDataSource.getRepository(Users);
 
-export default function register(req: Request, res: Response): void {
-    logger.debug("Request Body", req.body);
-    const parsed = RegisterParamsSchema.safeParse(req.body);
+export default async function register(req: Request, res: Response) {
+	let existedUser, createdUser;
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	logger.debug("Request Body", req.body);
 
-    const userData = parsed.data;
-    UserRepository.findOne({
-        where: [
-            {email: userData.email},
-            {username: userData.username},
-        ]
-    })
-        .then((existedUser) => {
-            if (existedUser) {
-                logger.debug("Existed User", existedUser);
-                res.BadRequest("Username or Email already exists");
-                return;
-            }
+	const parsed = RegisterParamsSchema.safeParse(req.body);
 
-            const user = new Users();
+	if (parsed.error) {
+		logger.warn(parsed.error);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-            user.username = userData.username;
-            user.email = userData.email;
-            user.address = userData.address;
-            user.phone = userData.phone;
-            user.password = bcrypt.hashSync(userData.password, env.BCRYPT_HASH_ROUND);
-            user.firstName = userData.firstName;
-            user.lastName = userData.lastName;
-            user.dateOfBirth = new Date(userData.dateOfBirth);
+	const userData = parsed.data;
 
-            UserRepository.save(user)
-                .then(() => {
-                    UserRepository.findOne({where: {email: userData.email}})
-                    .then((createdUser) => res.Ok(createdUser));
-                })
-                .catch((err) => {
-                    logger.error(err);
-                    res.InternalServerError("")
-                });
-        })
-        .catch((err) => {
-            logger.error(err);
-            res.InternalServerError(err)
-        });
+	try {
+		existedUser = await UserRepository.findOne({
+			where: [
+				{email: userData.email},
+				{username: userData.username},
+			]
+		})
+	} catch (e) {
+		return res.InternalServerError(e)
+	}
+
+	if (existedUser) {
+		logger.debug("Existed User", existedUser);
+		res.BadRequest("Username or Email already exists");
+		return;
+	}
+
+	logger.debug("Creating new user");
+
+	const user = new Users();
+
+	Object.assign(user, userData);
+	user.role = "user";
+	user.password = bcrypt.hashSync(user.password, env.BCRYPT_HASH_ROUND);
+
+	try {
+		createdUser = await UserRepository.save(user);
+	} catch (e) {
+		return res.InternalServerError(e)
+	}
+
+	logger.debug("Created user", createdUser);
+
+	return res.Ok(createdUser);
 }
