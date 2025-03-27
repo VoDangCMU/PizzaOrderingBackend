@@ -13,3 +13,7 @@ export function extractErrorsFromZod(error: unknown) {
     logger.error(error);
     return {message: "Unexpected error occurred. Check server logs for more information."};
 }
+
+export function randomUUID() {
+    return crypto.randomUUID();
+}

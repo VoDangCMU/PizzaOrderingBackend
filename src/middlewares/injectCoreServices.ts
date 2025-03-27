@@ -1,4 +1,6 @@
 import {NextFunction, Request, Response} from "express";
+import {randomUUID} from "@root/utils";
+import logger from "@root/logger";
 
 export function injectCoreServices(req: Request, res: Response, next: NextFunction) {
     res.Ok = function (data: any = {}) {
@@ -32,10 +34,13 @@ export function injectCoreServices(req: Request, res: Response, next: NextFuncti
         })
     }
 
-    res.InternalServerError = function (detail: any, message: string = "Internal Server Error") {
+    res.InternalServerError = function (error: any, message: string = "Internal Server Error") {
+        const tracebackId = randomUUID();
+        logger.error(tracebackId, error);
+
         this.status(500).json({
             message: message,
-            detail,
+            "trace-id": tracebackId,
             statusCode: 500
         })
     }
