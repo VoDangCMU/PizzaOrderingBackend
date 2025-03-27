@@ -9,8 +9,8 @@ import getAllUsers from "@root/routes/user/getAllUsers";
 const user = express.Router();
 
 user.get("/get-by-id/:id", getUserById);
-user.get("/", isAuth, isAdmin, getAllUsers);
-user.put("/:id", isAuth, updateUserById);
-user.delete("/:id", isAuth, deleteUserById);
+user.get("/get-all", isAuth, isAdmin, getAllUsers);
+user.put("/update/", isAuth, updateUserById);
+user.delete("/delete/:id", isAuth, deleteUserById);
 
 module.exports = user;

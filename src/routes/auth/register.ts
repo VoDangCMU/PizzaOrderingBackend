@@ -68,5 +68,9 @@ export default async function register(req: Request, res: Response) {
 
 	logger.debug("Created user", createdUser);
 
+	// HIDE PASSWORD BEFORE SEND BACK TO CLIENT
+	// Or you can re query user from database, but that not cost-efficient
+	createdUser.password = "";
+
 	return res.Ok(createdUser);
 }
