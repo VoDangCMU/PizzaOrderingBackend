@@ -8,14 +8,17 @@ import env from "@root/env";
 const UserRepository = AppDataSource.getRepository(Users);
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
+import Boolean from "@root/schemas/Boolean";
 
 const LoginParamsSchema = z.object({
     username: z.string(),
     password: z.string(),
-    keepLogin: z.union([z.string(), z.boolean()]).optional().default(false),
+    keepLogin: Boolean.default(false),
 })
 
 export default async function login(req: Request, res: Response) {
+    let user;
+
     logger.debug("Request Body", req.body);
 
     const parsed = LoginParamsSchema.safeParse(req.body);
@@ -27,41 +30,40 @@ export default async function login(req: Request, res: Response) {
 
     const loginParams = parsed.data;
 
-    UserRepository.findOne({
-        where: [
-            {username: loginParams.username},
-            {email: loginParams.username},
-        ],
-        select: { username: true, password: true, id: true },
-    })
-        .then(user => {
-            if (!user) {
-                res.BadRequest("Username does not exist.");
-                return;
-            }
-
-            logger.debug(user);
-
-            if (compareSync(loginParams.password, user.password)) {
-
-                const token = jwt.sign({
-                    username: loginParams.username,
-                    userID: user.id,
-                }, env.JWT_SECRET, {
-                    algorithm: "HS256",
-                    expiresIn: "7d",
-                })
-
-                logger.debug("TOKEN", token);
-
-                res.Ok(token);
-                return;
-            }
-
-            res.BadRequest("Password does not match.");
+    try {
+        user = await UserRepository.findOne({
+            where: [
+                {username: loginParams.username},
+                {email: loginParams.username},
+            ],
+            select: { username: true, password: true, id: true },
         })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError(err)
-        });
+    } catch (e) {
+        logger.error(e);
+        return res.InternalServerError(e)
+    }
+
+    if (!user) return res.BadRequest("Username does not exist.");
+
+    logger.debug("Existed user", user);
+
+    if (!compareSync(loginParams.password, user.password)) {
+        logger.debug("Password mismatch");
+        return res.BadRequest([{message: "Password does not match."}]);
+    }
+
+    logger.debug("Password matched");
+
+    const token = jwt.sign({
+        username: loginParams.username,
+        userID: user.id,
+    }, env.JWT_SECRET, {
+        algorithm: "HS256",
+        expiresIn: "7d",
+    })
+
+    logger.debug("Signed token", token);
+
+    res.cookie('token', token, { maxAge: 3600 * 24 * 7 });
+    return res.Ok(token);
 }
