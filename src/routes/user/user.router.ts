@@ -8,7 +8,7 @@ import getAllUsers from "@root/routes/user/getAllUsers";
 
 const user = express.Router();
 
-user.get("/:id", getUserById);
+user.get("/get-by-id/:id", getUserById);
 user.get("/", isAuth, isAdmin, getAllUsers);
 user.put("/:id", isAuth, updateUserById);
 user.delete("/:id", isAuth, deleteUserById);
