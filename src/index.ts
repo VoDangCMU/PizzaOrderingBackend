@@ -7,6 +7,30 @@ import fs from "fs";
 import morgan from "morgan";
 import isAuth from "@root/middlewares/isAuth";
 import logger from "@root/logger";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+
+const options = {
+    definition: {
+        openapi: "3.1.0",
+        info: {
+            title: "PizzaSpecs",
+            version: "1.0.0",
+        },
+        servers: [
+            {
+                url: "http://localhost:4532",
+            },
+            {
+                url: "http://15.235.167.33:9241",
+            },
+            {
+                url: "http://15.235.167.33:7682",
+            },
+        ],
+    },
+    apis: ["./src/routes/**/*.js", "./src/routes/**/*.ts"],
+};
 
 AppDataSource.initialize()
     .then(() => {
@@ -64,6 +88,14 @@ for (const router of routes) {
         app.use(`/${router}`, routerBody)
     }
 }
+
+const specs = swaggerJsdoc(options);
+app.use("/manifest", (req, res) => res.Ok(specs));
+app.use(
+  "/specs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true })
+);
 
 app.listen(env.APP_PORT, () => {
     logger.info(`Server running on port ${env.APP_PORT}\nURL: http://localhost:${env.APP_PORT}`);

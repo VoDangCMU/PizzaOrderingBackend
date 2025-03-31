@@ -4,42 +4,43 @@ import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
 import {AppDataSource} from "@root/data-source";
 import Ingredients from "@root/entity/Ingredients";
+import NUMBER from "@root/schemas/Number";
 
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
-export default function deleteIngredient(req: Request, res: Response) {
-    const _id = req.params.id;
+const IngredientIdSchema = z.object({
+	id: NUMBER
+})
 
-    const parsed = z.string().regex(/^\d+$/).transform(Number).safeParse(_id);
+export default async function deleteIngredient(req: Request, res: Response) {
+	const parsed = IngredientIdSchema.safeParse({id: req.params.id});
+	let ingredient;
 
-    if (parsed.error) {
-        logger.warn(`Error: ${parsed.error.message}`);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	if (parsed.error) {
+		logger.warn(`Error: ${parsed.error.message}`);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-    const id = parsed.data
+	const id = parsed.data.id
 
-    IngredientRepository.findOne({
-        where: {
-            id: id
-        }
-    })
-        .then(ingredient => {
-            if (!ingredient) {
-                res.NotFound({});
-                return;
-            }
+	try {
+		ingredient = await IngredientRepository.findOne({
+			where: {
+				id: id
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-            IngredientRepository.delete(id)
-                .then(() => res.Ok(ingredient))
-                .catch((err) => {
-                    logger.error(err);
-                    res.InternalServerError({});
-                })
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	if (!ingredient) return res.NotFound([{message: `Ingredient wit id ${id} not found`}]);
+
+	try {
+		await IngredientRepository.delete(id);
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	res.Ok(ingredient);
 }

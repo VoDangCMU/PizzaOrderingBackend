@@ -1,40 +1,37 @@
-import {z} from "zod";
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
 import {Request, Response} from "express";
 import {AppDataSource} from "@root/data-source";
 import Ingredients from "@root/entity/Ingredients";
+import Number from "@root/schemas/Number";
+import {z} from "zod";
 
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
-export default function getIngredient(req: Request, res: Response) {
-    const _id = req.params.id;
+const IngredientIdSchema = z.object({
+	id: Number,
+})
 
-    const parsed = z.string().regex(/^\d+$/).transform(Number).safeParse(_id);
+export default async function getIngredient(req: Request, res: Response) {
+	const parsedId = IngredientIdSchema.safeParse({id: req.params.id});
+	let ingredient;
 
-    if (parsed.error) {
-        logger.warn(`Error: ${parsed.error.message}`);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	if (parsedId.error) {
+		logger.warn(parsedId.error);
+		return res.BadRequest(extractErrorsFromZod(parsedId.error));
+	}
 
-    const id = parsed.data
+	const id = parsedId.data.id
 
-    IngredientRepository.findOne({
-        where: {
-            id: id
-        }
-    })
-        .then(ingredient => {
-            if (!ingredient) {
-                res.NotFound({});
-                return;
-            }
+	try {
+		ingredient = await IngredientRepository.findOne({
+			where: {id}
+		});
+	} catch (err) {
+		return res.InternalServerError(err);
+	}
 
-            res.Ok(ingredient);
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	if (!ingredient) return res.NotFound([{message: `Ingredient with id ${id} not found.`}]);
+
+	return res.Ok(ingredient);
 }
