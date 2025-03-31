@@ -19,7 +19,111 @@ const RegisterParamsSchema = z.object({
 })
 
 const UserRepository = AppDataSource.getRepository(Users);
-
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Creates a new user account with the provided details. Validates input and checks for existing usernames or emails.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: johndoe
+ *               password:
+ *                 type: string
+ *                 example: mysecurepassword
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *                 example: "1990-01-01"
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               phone:
+ *                 type: string
+ *                 example: "+1234567890"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: johndoe@example.com
+ *               address:
+ *                 type: string
+ *                 example: "123 Main St, Anytown, USA"
+ *     responses:
+ *       '200':
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 username:
+ *                   type: string
+ *                   example: johndoe
+ *                 firstName:
+ *                   type: string
+ *                   example: John
+ *                 lastName:
+ *                   type: string
+ *                   example: Doe
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   example: johndoe@example.com
+ *                 phone:
+ *                   type: string
+ *                   example: "+1234567890"
+ *                 address:
+ *                   type: string
+ *                   example: "123 Main St, Anytown, USA"
+ *                 dateOfBirth:
+ *                   type: string
+ *                   format: date
+ *                   example: "1990-01-01"
+ *                 role:
+ *                   type: string
+ *                   example: user
+ *                 password:
+ *                   type: string
+ *                   example: ""
+ *       '400':
+ *         description: Bad Request (validation error or user already exists)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Username or Email already exists"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 export default async function register(req: Request, res: Response) {
 	let existedUser, createdUser;
 

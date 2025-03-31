@@ -8,43 +8,40 @@ import Ingredients from "@root/entity/Ingredients";
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
 const CreatePizzaParams = z.object({
-    name: z.string(),
+	name: z.string(),
 })
 
-export default function createIngredient(req: Request, res: Response) {
-    const _body = req.body;
+export default async function createIngredient(req: Request, res: Response) {
+	const parsed = CreatePizzaParams.safeParse(req.body);
+	let isIngredientExist;
 
-    const parsed = CreatePizzaParams.safeParse(_body);
+	if (parsed.error) {
+		logger.warn(parsed.error);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	const ingredientData = parsed.data;
 
-    const ingredient = parsed.data;
+	try {
+		isIngredientExist = await IngredientRepository.exists({
+			where: {name: ingredientData.name},
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-    IngredientRepository.exists({
-        where: {name: ingredient.name},
-    })
-        .then(existence => {
-            if (existence) {
-                return res.BadRequest([{message: "Ingredient already exists"}]);
-            }
+	if (isIngredientExist) return res.BadRequest([{message: `Ingredient ${ingredientData.name} already exist`}]);
 
-            const createdIngredient = new Ingredients();
+	const createdIngredient = new Ingredients();
 
-            createdIngredient.name = ingredient.name;
+	createdIngredient.name = ingredientData.name;
 
-            IngredientRepository.save(createdIngredient)
-                .then(() => res.Ok(createdIngredient))
-                .catch(err => {
-                    logger.error(err);
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	try {
+		await IngredientRepository.save(createdIngredient)
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	res.Ok(createdIngredient);
 }

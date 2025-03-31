@@ -4,49 +4,44 @@ import {extractErrorsFromZod} from "@root/utils";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import Ingredients from "@root/entity/Ingredients";
+import Number from "@root/schemas/Number";
 
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
 const UpdatePizzaParams = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
-    name: z.string(),
+	id: Number,
+	name: z.string(),
 })
 
-export default function updateIngredient (req: Request, res: Response) {
-    const _body = req.body;
+export default async function updateIngredient(req: Request, res: Response) {
+	const parsedIngredient = UpdatePizzaParams.safeParse(req.body);
+	let ingredient;
 
-    const parsed = UpdatePizzaParams.safeParse(_body);
+	if (parsedIngredient.error) {
+		logger.warn(parsedIngredient.error);
+		return res.BadRequest(extractErrorsFromZod(parsedIngredient.error));
+	}
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	const ingredientData = parsedIngredient.data;
 
-    const ingredient = parsed.data;
+	try {
+		ingredient = await IngredientRepository.findOne({
+			where: {
+				id: ingredientData.id
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-    IngredientRepository.findOne({
-        where: {
-            id: ingredient.id
-        }
-    })
-        .then(existedIngredient => {
-            if (!existedIngredient) {
-                res.NotFound({});
-                return;
-            }
+	if (!ingredient) return res.NotFound([{message: `Ingredient with id ${ingredientData.id} not found`}]);
+	ingredient.name = ingredientData.name;
 
-            existedIngredient.name = ingredient.name;
+	try {
+		await IngredientRepository.save(ingredient)
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-            IngredientRepository.save(existedIngredient)
-                .then(() => res.Ok(existedIngredient))
-                .catch(err => {
-                    logger.error(err)
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	return res.Ok(ingredient);
 }

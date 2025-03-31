@@ -8,11 +8,11 @@ import getIngredientByName from "@root/routes/ingredient/getIngredientByName";
 
 const ingredient = Router();
 
-ingredient.get("/getByID/:id", getIngredient);
-ingredient.get("/getByName", getIngredientByName);
-ingredient.get("/", getAllIngredients);
-ingredient.post("/", createIngredient);
-ingredient.delete("/:id", deleteIngredient);
-ingredient.put("/", updateIngredient);
+ingredient.get("/get-by-id/:id", getIngredient);
+ingredient.get("/get-by-name/:name", getIngredientByName);
+ingredient.get("/get-all", getAllIngredients);
+ingredient.post("/create/", createIngredient);
+ingredient.delete("/delete/:id", deleteIngredient);
+ingredient.put("/update", updateIngredient);
 
 module.exports = ingredient;
