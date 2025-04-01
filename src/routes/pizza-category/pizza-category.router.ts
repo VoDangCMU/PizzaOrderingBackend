@@ -8,11 +8,11 @@ import {getPizzaCategoryByName} from "@root/routes/pizza-category/getPizzaCatego
 
 const pizzaCategory = Router();
 
-pizzaCategory.get("/getByID/:id", getPizzaCategory);
-pizzaCategory.get("/getByName", getPizzaCategoryByName);
-pizzaCategory.get("/", getAllPizzaCategories);
-pizzaCategory.post("/", createPizzaCategory);
-pizzaCategory.delete("/:id", deletePizzaCategory);
-pizzaCategory.put("/", updatePizzaCategory);
+pizzaCategory.get("/get-by-id/:id", getPizzaCategory);
+pizzaCategory.get("/get-by-name/:name", getPizzaCategoryByName);
+pizzaCategory.get("/get-all", getAllPizzaCategories);
+pizzaCategory.post("/create", createPizzaCategory);
+pizzaCategory.delete("/delete/:id", deletePizzaCategory);
+pizzaCategory.put("/update", updatePizzaCategory);
 
 module.exports = pizzaCategory;
