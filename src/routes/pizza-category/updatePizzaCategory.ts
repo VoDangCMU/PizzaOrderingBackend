@@ -4,49 +4,42 @@ import {extractErrorsFromZod} from "@root/utils";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import PizzaCategories from "@root/entity/PizzaCategories";
+import Number from "@root/schemas/Number";
 
 const PizzaCategoryRepository = AppDataSource.getRepository(PizzaCategories);
 
 const UpdatePizzaCategoryParams = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
-    name: z.string(),
+	id: Number,
+	name: z.string(),
 })
 
-export default function updatePizzaCategory(req: Request, res: Response) {
-    const _body = req.body;
+export default async function updatePizzaCategory(req: Request, res: Response) {
+	const parsed = UpdatePizzaCategoryParams.safeParse(req.body);
+	let category;
 
-    const parsed = UpdatePizzaCategoryParams.safeParse(_body);
+	if (parsed.error) {
+		logger.warn(parsed.error);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	const pizzaCategoryData = parsed.data;
 
-    const pizzaCategory = parsed.data;
+	try {
+		category = await PizzaCategoryRepository.findOne({
+			where: {
+				id: pizzaCategoryData.id
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-    PizzaCategoryRepository.findOne({
-        where: {
-            id: pizzaCategory.id
-        }
-    })
-        .then(existedIngredient => {
-            if (!existedIngredient) {
-                res.NotFound({});
-                return;
-            }
+	if (!category) return res.NotFound([{message: `Category with id ${pizzaCategoryData.id} not found.`}]);
 
-            existedIngredient.name = pizzaCategory.name;
+	category.name = pizzaCategoryData.name;
 
-            PizzaCategoryRepository.save(existedIngredient)
-                .then(() => res.Ok(existedIngredient))
-                .catch(err => {
-                    logger.error(err)
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	await PizzaCategoryRepository.save(category)
+
+	return res.Ok(category);
 }

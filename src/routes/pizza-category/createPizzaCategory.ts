@@ -8,42 +8,44 @@ import PizzaCategories from "@root/entity/PizzaCategories";
 const PizzaCategoryRepository = AppDataSource.getRepository(PizzaCategories);
 
 const CreatePizzaCategorySchema = z.object({
-    name: z.string(),
+	name: z.string(),
+	description: z.string(),
 })
 
-export function createPizzaCategory(req: Request, res: Response) {
-    const _body = req.body;
-    const parsed = CreatePizzaCategorySchema.safeParse(_body);
+export async function createPizzaCategory(req: Request, res: Response) {
+	const parsed = CreatePizzaCategorySchema.safeParse(req.body);
+	let existedCategory;
 
-    if (parsed.error) {
-        logger.warn(`Error: ${parsed.error.message}`);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	if (parsed.error) {
+		logger.warn(`Error: ${parsed.error}`);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-    const category = parsed.data;
+	const categoryData = parsed.data;
 
-    PizzaCategoryRepository.findOne({
-        where: {name: category.name.toLowerCase()},
-    })
-        .then(existedCategory => {
-            if (existedCategory) {
-                return res.BadRequest([{message: "Category already exists", detail: existedCategory}]);
-            }
+	try {
+		existedCategory = await PizzaCategoryRepository.findOne({
+			where: {name: categoryData.name.toLowerCase()},
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-            const createdCategory = new PizzaCategories();
+	if (existedCategory) {
+		return res.BadRequest([{message: "Category already exists", detail: existedCategory}]);
+	}
 
-            createdCategory.name = category.name.toLowerCase();
+	const createdCategory = new PizzaCategories();
 
-            PizzaCategoryRepository.save(createdCategory)
-                .then(() => res.Ok(createdCategory))
-                .catch(err => {
-                    logger.error(err);
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	createdCategory.name = categoryData.name.toLowerCase();
+	createdCategory.description = categoryData.description;
+
+	try {
+		await PizzaCategoryRepository.save(createdCategory);
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	res.Ok(createdCategory)
 }
