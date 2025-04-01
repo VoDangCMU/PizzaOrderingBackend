@@ -1,41 +1,38 @@
-import { Request, Response } from "express";
-import { z } from "zod";
+import {Request, Response} from "express";
+import {z} from "zod";
 import logger from "@root/logger";
-import { AppDataSource } from "@root/data-source";
+import {AppDataSource} from "@root/data-source";
 import PizzaCategories from "@root/entity/PizzaCategories";
 
 const PizzaCategorySchema = z.object({
-    name: z.string(),
+	name: z.string(),
 });
 
 const PizzaCategoryRepository = AppDataSource.getRepository(PizzaCategories);
 
-export function getPizzaCategoryByName(req: Request, res: Response) {
-    const name = req.query.name;
-    const parsed = PizzaCategorySchema.safeParse({ name });
+export async function getPizzaCategoryByName(req: Request, res: Response) {
+	const name = req.params.name;
+	let category;
+	const parsed = PizzaCategorySchema.safeParse({name});
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(parsed.error);
-        return;
-    }
+	if (parsed.error) {
+		logger.warn(parsed.error);
+		return res.BadRequest(parsed.error);
+	}
 
-    const category = parsed.data;
+	const categoryName = parsed.data.name;
 
-    PizzaCategoryRepository.findOne({
-        where: {
-            name: category.name
-        },
-    })
-        .then((category) => {
-            if (!category) {
-                res.NotFound([{ message: "Pizza Category Not Found" }]);
-                return;
-            }
-            res.Ok(category);
-        })
-        .catch((err) => {
-            logger.error(err);
-            res.InternalServerError({});
-        });
+	try {
+		category = await PizzaCategoryRepository.findOne({
+			where: {
+				name: categoryName
+			},
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	if (!category) return res.NotFound([{message: "Pizza Category Not Found"}]);
+
+	res.Ok(category);
 }

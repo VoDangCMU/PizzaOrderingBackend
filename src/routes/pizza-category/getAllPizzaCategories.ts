@@ -12,6 +12,6 @@ export default async function getAllPizzaCategories(req: Request, res: Response)
         res.Ok(pizzaCategories);
     } catch(error) {
         logger.error(error);
-        res.InternalServerError({});
+        res.InternalServerError(error);
     }
 }
