@@ -13,6 +13,50 @@ const UpdatePizzaParams = z.object({
 	name: z.string(),
 })
 
+/**
+ * @swagger
+ * /ingredients/update/:
+ *   put:
+ *     tags: [Ingredient]
+ *     summary: Update an ingredient by ID
+ *     description: Updates the details of an ingredient specified by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the ingredient to update.
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: ingredient
+ *         required: true
+ *         description: The ingredient object containing updated details.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Ingredient successfully updated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Ingredient not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export default async function updateIngredient(req: Request, res: Response) {
 	const parsedIngredient = UpdatePizzaParams.safeParse(req.body);
 	let ingredient;

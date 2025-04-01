@@ -22,6 +22,74 @@ const UserUpdateSchema = z.object({
 
 const UserRepository = AppDataSource.getRepository(User);
 
+/**
+ * @swagger
+ * /user/update/:
+ *   put:
+ *     tags: [User]
+ *     summary: Update a user's information
+ *     description: Updates the details of a user specified by their ID. The logged-in user can only update their own information.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: User successfully updated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 firstName:
+ *                   type: string
+ *                 lastName:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 dateOfBirth:
+ *                   type: string
+ *                   format: date
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       403:
+ *         description: Forbidden, cannot access another user's resources.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
 export default async function updateUserById(req: Request, res: Response) {
 	const loggedInUserId = req.userID;
 	let existedUser;
