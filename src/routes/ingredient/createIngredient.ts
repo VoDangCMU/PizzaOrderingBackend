@@ -11,6 +11,42 @@ const CreatePizzaParams = z.object({
 	name: z.string(),
 })
 
+/**
+ * @swagger
+ * /ingredient/create:
+ *   post:
+ *     tags: [Ingredient]
+ *     summary: Create a new ingredient
+ *     description: Adds a new ingredient to the database. Returns the created ingredient object.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the ingredient to be created.
+ *     responses:
+ *       200:
+ *         description: Ingredient successfully created.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors or if the ingredient already exists.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export default async function createIngredient(req: Request, res: Response) {
 	const parsed = CreatePizzaParams.safeParse(req.body);
 	let isIngredientExist;

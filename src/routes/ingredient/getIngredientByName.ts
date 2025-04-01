@@ -10,6 +10,41 @@ const IngredientNameSchema = z.object({
 	name: z.string(),
 })
 
+/**
+ * @swagger
+ * /ingredient/get-by-name/{name}:
+ *   get:
+ *     tags: [Ingredient]
+ *     summary: Retrieve a specific ingredient by name
+ *     description: Fetches a single ingredient from the database specified by its name.
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         required: true
+ *         description: The name of the ingredient to retrieve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ingredient successfully retrieved.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Ingredient not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export default async function getIngredientByName(req: Request, res: Response) {
 	const name = req.params.name;
 	const parsedIngredientName = IngredientNameSchema.safeParse({name});
