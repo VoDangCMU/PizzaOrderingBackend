@@ -13,6 +13,50 @@ const UpdatePizzaCategoryParams = z.object({
 	name: z.string(),
 })
 
+/**
+ * @swagger
+ * /pizza-category/update:
+ *   put:
+ *     tags: [Pizza-Categories]
+ *     summary: Update a pizza category by ID
+ *     description: Updates the details of a specific pizza category identified by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the pizza category to update.
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: The data to update the pizza category.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Successfully updated the pizza category.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Pizza category not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export default async function updatePizzaCategory(req: Request, res: Response) {
 	const parsed = UpdatePizzaCategoryParams.safeParse(req.body);
 	let category;

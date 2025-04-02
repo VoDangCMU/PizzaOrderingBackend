@@ -12,6 +12,47 @@ const CreatePizzaCategorySchema = z.object({
 	description: z.string(),
 })
 
+/**
+ * @swagger
+ * /pizza-category/create:
+ *   post:
+ *     tags: [Pizza-Categories]
+ *     summary: Create a new pizza category
+ *     description: Adds a new pizza category to the database.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the pizza category.
+ *               description:
+ *                 type: string
+ *                 description: A brief description of the pizza category.
+ *     responses:
+ *       200:
+ *         description: Pizza category successfully created.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors or if the category already exists.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export async function createPizzaCategory(req: Request, res: Response) {
 	const parsed = CreatePizzaCategorySchema.safeParse(req.body);
 	let existedCategory;

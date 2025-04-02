@@ -90,7 +90,8 @@ for (const router of routes) {
 }
 
 const specs = swaggerJsdoc(options);
-app.use("/manifest", (req, res) => res.Ok(specs));
+app.get("/manifest", (req, res) => res.Ok(specs));
+app.get("/manifest/open-api", (req, res) => {res.json(specs)});
 app.use(
   "/specs",
   swaggerUi.serve,
