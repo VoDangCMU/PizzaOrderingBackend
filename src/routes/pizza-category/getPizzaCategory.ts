@@ -12,6 +12,43 @@ const PizzaCategoryIdSchema = z.object({
 	id: Number
 })
 
+/**
+ * @swagger
+ * /pizza-category/get-by-id/{id}:
+ *   get:
+ *     tags: [Pizza-Categories]
+ *     summary: Retrieve a pizza category by ID
+ *     description: Fetches a specific pizza category from the database using its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the pizza category to retrieve.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the pizza category.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Pizza category not found.
+ *       500:
+ *         description: Internal server error.
+ */
+
+
 export default async function getPizzaCategory(req: Request, res: Response) {
 	const parsed = PizzaCategoryIdSchema.safeParse({id: req.params.id});
 	let category;
