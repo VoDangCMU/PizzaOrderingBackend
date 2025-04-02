@@ -6,11 +6,11 @@ import deletePizzaIngredient from "@root/routes/pizza-ingredient/deletePizzaIngr
 import getAllPizzaIngredients from "@root/routes/pizza-ingredient/getAllPizzaIngredients";
 
 const pizzaIngredient = express.Router();
-pizzaIngredient.post("/", createPizzaIngredient);
-pizzaIngredient.get("/:id", getPizzaIngredient);
-pizzaIngredient.get("/", getAllPizzaIngredients);
-pizzaIngredient.put("/:id", updatePizzaIngredient);
-pizzaIngredient.delete("/:id", deletePizzaIngredient);
+pizzaIngredient.post("/create", createPizzaIngredient);
+pizzaIngredient.get("/get-by-id/:id", getPizzaIngredient);
+pizzaIngredient.get("/get-all", getAllPizzaIngredients);
+pizzaIngredient.put("/update/", updatePizzaIngredient);
+pizzaIngredient.delete("/delete/:id", deletePizzaIngredient);
 
 module.exports = pizzaIngredient;
 
