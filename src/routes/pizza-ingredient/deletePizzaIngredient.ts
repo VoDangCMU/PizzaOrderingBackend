@@ -1,47 +1,43 @@
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import PizzaIngredient from "@root/entity/PizzaIngredient";
-import logger from "@root/logger";
+import Number from "@root/schemas/Number";
 
 const DeletePizzaIngredientSchema = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
+	id: Number,
 })
 
 const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
 
-export default function deletePizzaIngredient(req: Request, res: Response) {
-    const pizzaIngredientId = req.params.id;
+export default async function deletePizzaIngredient(req: Request, res: Response) {
+	const pizzaIngredientData = DeletePizzaIngredientSchema.safeParse({id: req.params.id});
+	let existedPizzaIngredient;
 
-    const parsedId = DeletePizzaIngredientSchema.safeParse({id: pizzaIngredientId});
-    if (parsedId.error) {
-        res.BadRequest(parsedId.error);
-        return;
-    }
+	if (pizzaIngredientData.error) {
+		res.BadRequest(pizzaIngredientData.error);
+		return;
+	}
 
-    const pizzaIngredientIdParsed = parsedId.data.id;
-    PizzaIngredientRepository.findOne({
-        where: {
-            id: pizzaIngredientIdParsed
-        }
-    })
-        .then(pizzaIngredient => {
-            if (!pizzaIngredient) {
-                res.NotFound("PizzaIngredient not found");
-                return;
-            }
+	const pizzaIngredientId = pizzaIngredientData.data.id;
 
-            PizzaIngredientRepository.delete(pizzaIngredientIdParsed)
-                .then(() =>{
-                    res.Ok(pizzaIngredient);
-                })
-                .catch(err => {
-                    logger.error(err);
-                    res.InternalServerError({});
-                })
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	try {
+		existedPizzaIngredient = await PizzaIngredientRepository.findOne({
+			where: {
+				id: pizzaIngredientId
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	if (!existedPizzaIngredient) return res.NotFound([{message: `Pizza Ingredient with id ${pizzaIngredientId} not found.`}]);
+
+	try {
+		await PizzaIngredientRepository.delete(pizzaIngredientId)
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	res.Ok(existedPizzaIngredient);
 }
