@@ -8,11 +8,11 @@ import getPizzaByName from "@root/routes/pizza/getPizzaByName";
 
 const pizza = Router();
 
-pizza.get("/getByID/:id", getPizza);
-pizza.get("/getByName", getPizzaByName);
-pizza.get("/", getAllPizzas);
-pizza.post("/", createPizza);
-pizza.delete("/:id", deletePizza);
-pizza.put("/", updatePizza);
+pizza.get("/get-by-id/:id", getPizza);
+pizza.get("/get-by-name/:name", getPizzaByName);
+pizza.get("/get-all", getAllPizzas);
+pizza.post("/create", createPizza);
+pizza.delete("/delete/:id", deletePizza);
+pizza.put("/update", updatePizza);
 
 module.exports = pizza;
