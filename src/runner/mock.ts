@@ -11,9 +11,9 @@ import Pizza from "@root/entity/Pizza";
 import Ingredients from "@root/entity/Ingredients";
 import PizzaIngredient from "@root/entity/PizzaIngredient";
 import PizzaSize from "@root/entity/PizzaSize";
-import Cart from "@root/entity/Cart";
+import Order from "@root/entity/Order";
 import Users from "@root/entity/Users";
-import CartItem from "@root/entity/CartItem";
+import OrderItem from "@root/entity/OrderItem";
 import moment from "moment";
 import {sleep} from "@root/utils";
 
@@ -22,9 +22,9 @@ const PizzaRepository = AppDataSource.getRepository(Pizza);
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
 const PizzaSizeRepository = AppDataSource.getRepository(PizzaSize);
-const CartRepository = AppDataSource.getRepository(Cart);
+const CartRepository = AppDataSource.getRepository(Order);
 const UserRepository = AppDataSource.getRepository(Users);
-const CartItemRepository = AppDataSource.getRepository(CartItem);
+const CartItemRepository = AppDataSource.getRepository(OrderItem);
 
 logger.info(`Running in ${env.ENV} environment`)
 AppDataSource.initialize()
@@ -389,7 +389,7 @@ async function createPizzaIngredient(pizza: Pizza, ingredient: Ingredients) {
 }
 
 async function createCart(user: Users) {
-	const cart = (await CartRepository.findOne({where: {user: {id: user.id}}})) || new Cart();
+	const cart = (await CartRepository.findOne({where: {user: {id: user.id}}})) || new Order();
 
 	cart.user = user;
 
@@ -416,11 +416,11 @@ async function createUser() {
 	return user;
 }
 
-async function createCartItem(cart: Cart, pizzaData: IPizzaData) {
-	const cartItem = new CartItem();
+async function createCartItem(cart: Order, pizzaData: IPizzaData) {
+	const cartItem = new OrderItem();
 	const existedPizza = (await PizzaRepository.findOne({where: {name: pizzaData.pizza_name}}))!
 
-	cartItem.cart = cart;
+	cartItem.order = cart;
 	cartItem.pizza = existedPizza;
 	cartItem.quantity = pizzaData.quantity;
 	cartItem.size = (await PizzaSizeRepository.findOne({

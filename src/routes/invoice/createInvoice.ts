@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {AppDataSource} from "@root/data-source";
 import Invoice from "@root/entity/Invoice";
 import Users from "@root/entity/Users";
-import Cart from "@root/entity/Cart";
+import Order from "@root/entity/Order";
 import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
 
@@ -14,7 +14,7 @@ const CreateInvoiceSchema = z.object({
 
 const InvoiceRepository = AppDataSource.getRepository(Invoice);
 const UserRepository = AppDataSource.getRepository(Users);
-const CartRepository = AppDataSource.getRepository(Cart);
+const CartRepository = AppDataSource.getRepository(Order);
 
 export default async function createInvoice(req: Request, res: Response) {
     const body = req.body;
@@ -69,7 +69,7 @@ export default async function createInvoice(req: Request, res: Response) {
             }
         })
         if (!existedCart) {
-            res.NotFound("Cart not found");
+            res.NotFound("Order not found");
             return;
         }
 
