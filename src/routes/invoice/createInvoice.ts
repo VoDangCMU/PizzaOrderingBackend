@@ -45,7 +45,7 @@ export default async function createInvoice(req: Request, res: Response) {
         const existedInvoice = await InvoiceRepository.findOne({
             where: {
                 user: {id: parsedUserId.data},
-                cart: {id: parsedCartId.data}
+                order: {id: parsedCartId.data}
             }
         })
         if(existedInvoice) {
@@ -76,7 +76,7 @@ export default async function createInvoice(req: Request, res: Response) {
         const createdInvoice = new Invoice();
 
         createdInvoice.user = existedUser;
-        createdInvoice.cart = existedCart;
+        createdInvoice.order = existedCart;
         createdInvoice.price = invoice.price;
         createdInvoice.paid = invoice.paid;
 

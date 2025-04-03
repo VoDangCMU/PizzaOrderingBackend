@@ -29,10 +29,10 @@ export default async function getOrder(req: Request, res: Response) {
       relations: {user: true, orderItems: {pizza: true, crust: true, outerCrust: true, extra: true, size: true}}
     })
 
-    if (!order) return res.NotFound([{message: `Cart with id ${orderID} not found`}]);
+    if (!order) return res.NotFound([{message: `Order with id ${orderID} not found`}]);
 
     if (order.user.id != userID) {
-      res.Forbidden([{message: `You cannot access otthers cart`}])
+      res.Forbidden([{message: `You cannot access others order.`}])
       return;
     }
 

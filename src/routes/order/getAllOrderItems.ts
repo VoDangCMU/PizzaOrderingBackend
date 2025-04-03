@@ -3,11 +3,11 @@ import {AppDataSource} from "@root/data-source";
 import OrderItem from "@root/entity/OrderItem";
 import logger from "@root/logger";
 
-const orderItemRepository = AppDataSource.getRepository(OrderItem);
+const OrderItemRepository = AppDataSource.getRepository(OrderItem);
 
 export default async function getAllOrderItems(req: Request, res: Response) {
   try {
-    const cartItems = await orderItemRepository.find({
+    const cartItems = await OrderItemRepository.find({
       relations: {pizza: true, order: true, crust: true, extra: true, outerCrust: true, size: true}
     });
 

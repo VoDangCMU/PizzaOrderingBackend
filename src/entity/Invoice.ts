@@ -22,7 +22,7 @@ export default class Invoice {
     user: Users;
 
     @ManyToOne(() => Order, {onDelete: "CASCADE"})
-    cart: Order;
+    order: Order;
 
     @CreateDateColumn()
     createdAt: Date

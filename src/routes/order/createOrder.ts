@@ -4,31 +4,28 @@ import Users from "@root/entity/Users";
 import Order from "@root/entity/Order";
 
 const UserRepository = AppDataSource.getRepository(Users);
-const orderRepository = AppDataSource.getRepository(Order);
+const OrderRepository = AppDataSource.getRepository(Order);
 
 export default async function createOrder(req: Request, res: Response) {
-  const userID = req.userID;
+	const userID = req.userID;
 
-  try {
-    const existedUser = await UserRepository.findOne({
-      where: {id: userID},
-    })
+	try {
+		const existedUser = await UserRepository.findOne({
+			where: {id: userID},
+		})
 
-    if (!existedUser) {
-      res.BadRequest([{message: `User with id ${userID} not found`}]);
-      return;
-    }
+		if (!existedUser) return res.BadRequest([{message: `User with id ${userID} not found`}]);
 
-    const createdOrder = new Order();
+		const createdOrder = new Order();
 
-    createdOrder.user = existedUser;
-    createdOrder.orderItems = [];
+		createdOrder.user = existedUser;
+		createdOrder.orderItems = [];
 
-    await orderRepository.save(createdOrder);
+		await OrderRepository.save(createdOrder);
 
-    res.Ok(createdOrder);
-  } catch (e) {
-    res.InternalServerError(e);
-    return;
-  }
+		res.Ok(createdOrder);
+	} catch (e) {
+		res.InternalServerError(e);
+		return;
+	}
 }

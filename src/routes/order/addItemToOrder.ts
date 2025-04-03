@@ -18,111 +18,98 @@ const PizzaCrustRepository = AppDataSource.getRepository(PizzaCrust);
 const PizzaExtraRepository = AppDataSource.getRepository(PizzaExtras);
 const PizzaSizeRepository = AppDataSource.getRepository(PizzaSize);
 const PizzaOuterCrustRepository = AppDataSource.getRepository(PizzaOuterCrust);
-const orderRepository = AppDataSource.getRepository(Order);
+const OrderRepository = AppDataSource.getRepository(Order);
 
 const CreateCartItemSchema = z.object({
-  pizzaID: NUMBER,
-  pizzaCrustID: NUMBER.optional(),
-  pizzaOuterCrustID: NUMBER.optional(),
-  pizzaExtraID: NUMBER.optional(),
-  pizzaSizeID: NUMBER.optional(),
-  cartID: NUMBER,
-  quantity: NUMBER,
-  note: z.string().optional(),
+	pizzaID: NUMBER,
+	pizzaCrustID: NUMBER.optional(),
+	pizzaOuterCrustID: NUMBER.optional(),
+	pizzaExtraID: NUMBER.optional(),
+	pizzaSizeID: NUMBER,
+	orderID: NUMBER,
+	quantity: NUMBER,
+	note: z.string().optional(),
 })
 
 export default async function addItemToOrder(req: Request, res: Response) {
-  let parsed;
-  try {
-    parsed = CreateCartItemSchema.parse(req.body);
-  } catch (error) {
-    logger.warn(error);
-    return res.BadRequest(extractErrorsFromZod(error));
-  }
+	let orderItemData, existedPizza, existedPizzaExtra, existedPizzaCrust, existedPizzaOuterCrust, existedPizzaSize,
+		existedOrder, existedOrderItem;
 
-  try {
-    const cartItem = parsed;
+	try {
+		orderItemData = CreateCartItemSchema.parse(req.body);
+	} catch (error) {
+		logger.warn(error);
+		return res.BadRequest(extractErrorsFromZod(error));
+	}
 
-    const existedPizza = await PizzaRepository.findOne({
-      where: {id: cartItem.pizzaID},
-    })
+	try {
+		existedPizza = await PizzaRepository.findOne({
+			where: {id: orderItemData.pizzaID},
+		})
 
-    if (!existedPizza) {
-      return res.NotFound([{message: `Pizza with id ${cartItem.pizzaID} not found.`}])
-    }
+		existedPizzaExtra = await PizzaExtraRepository.findOne({
+			where: {id: orderItemData.pizzaExtraID}
+		})
 
-    const existedPizzaExtra = await PizzaExtraRepository.findOne({
-      where: {id: cartItem.pizzaExtraID}
-    })
-    const pizzaExtra = existedPizzaExtra || null;
+		existedPizzaCrust = await PizzaCrustRepository.findOne({
+			where: {id: orderItemData.pizzaCrustID}
+		})
 
-    const existedPizzaCrust = await PizzaCrustRepository.findOne({
-      where: {id: cartItem.pizzaCrustID}
-    })
-    const pizzaCrust = existedPizzaCrust || null;
+		existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
+			where: {id: orderItemData.pizzaOuterCrustID}
+		})
 
-    const existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
-      where: {id: cartItem.pizzaOuterCrustID}
-    })
-    const pizzaOuterCrust = existedPizzaOuterCrust || null;
+		existedPizzaSize = await PizzaSizeRepository.findOne({
+			where: {id: orderItemData.pizzaSizeID}
+		})
 
-    const existedPizzaSize = await PizzaSizeRepository.findOne({
-      where: {id: cartItem.pizzaSizeID}
-    })
-    const pizzaSize = existedPizzaSize || null;
+		existedOrder = await OrderRepository.findOne({
+			where: {id: orderItemData.orderID},
+			relations: {
+				orderItems: true,
+				user: true
+			}
+		})
 
-    const existedCart = await orderRepository.findOne({
-      where: {id: cartItem.cartID},
-      relations: {
-        orderItems: true,
-        user: true
-      }
-    })
+		existedOrderItem = await orderItemRepository.findOne({
+			where: {
+				pizza: {id: orderItemData.pizzaID},
+				crust: {id: orderItemData.pizzaCrustID},
+				outerCrust: {id: orderItemData.pizzaOuterCrustID},
+				extra: {id: orderItemData.pizzaExtraID},
+				size: {id: orderItemData.pizzaSizeID},
+				order: {id: orderItemData.orderID}
+			},
+			relations: {
+				pizza: true, crust: true, outerCrust: true, extra: true, size: true, order: {orderItems: true}
+			}
+		});
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-    if (!existedCart) {
-      return res.NotFound([{message: `Cart with id ${cartItem.cartID} not found.`}])
-    }
+	if (!existedPizza) return res.NotFound([{message: `Pizza with id ${orderItemData.pizzaID} not found.`}])
+	if (!existedOrder) return res.NotFound([{message: `Order with id ${orderItemData.orderID} not found.`}]);
+	if (existedOrder.user.id != req.userID) return res.Forbidden([{message: `You cannot access others order.`}])
 
-    if (existedCart.user.id != req.userID) {
-      return res.Forbidden([{message: `You cannot access others cart`}])
-    }
+	if (existedOrderItem) {
+		existedOrderItem.quantity += 1;
+		await orderItemRepository.save(existedOrderItem);
 
-    const existedCartItem = await orderItemRepository.findOne({
-      where: {
-        pizza: {id: cartItem.pizzaID},
-        crust: {id: cartItem.pizzaCrustID},
-        outerCrust: {id: cartItem.pizzaOuterCrustID},
-        extra: {id: cartItem.pizzaExtraID},
-        size: {id: cartItem.pizzaSizeID},
-        order: {id: cartItem.cartID}
-      },
-      relations: {
-        pizza: true, crust: true, outerCrust: true, extra: true, size: true, order: {orderItems: true}
-      }
-    });
+		return res.Ok(existedOrderItem);
+	}
 
-    if (existedCartItem) {
-      existedCartItem.quantity += 1;
-      await orderItemRepository.save(existedCartItem);
+	const createdCartItem = new OrderItem();
 
-      return res.Ok(existedCartItem);
-    }
+	Object.assign(createdCartItem, orderItemData);
+	createdCartItem.size = existedPizzaSize;
+	createdCartItem.extra = existedPizzaExtra;
+	createdCartItem.crust = existedPizzaCrust;
+	createdCartItem.outerCrust = existedPizzaOuterCrust;
+	createdCartItem.order = existedOrder;
+	createdCartItem.pizza = existedPizza;
 
-    const createdCartItem = new OrderItem();
-    createdCartItem.quantity = 1;
-    createdCartItem.order = existedCart;
-    createdCartItem.pizza = existedPizza;
-    createdCartItem.crust = pizzaCrust;
-    createdCartItem.outerCrust = pizzaOuterCrust;
-    createdCartItem.extra = pizzaExtra;
-    createdCartItem.size = pizzaSize;
-    createdCartItem.note = cartItem.note || "";
+	await orderItemRepository.save(createdCartItem);
 
-    await orderItemRepository.save(createdCartItem);
-
-    res.Ok(createdCartItem);
-  } catch (e) {
-    logger.error(e);
-    res.InternalServerError({});
-  }
+	res.Ok(createdCartItem);
 }
