@@ -22,9 +22,9 @@ const OrderRepository = AppDataSource.getRepository(Order);
 
 const CreateCartItemSchema = z.object({
 	pizzaID: NUMBER,
-	pizzaCrustID: NUMBER.optional(),
-	pizzaOuterCrustID: NUMBER.optional(),
-	pizzaExtraID: NUMBER.optional(),
+	pizzaCrustID: NUMBER.nullable().optional(),
+	pizzaOuterCrustID: NUMBER.nullable().optional(),
+	pizzaExtraID: NUMBER.nullable().optional(),
 	pizzaSizeID: NUMBER,
 	orderID: NUMBER,
 	quantity: NUMBER,
@@ -32,8 +32,9 @@ const CreateCartItemSchema = z.object({
 })
 
 export default async function addItemToOrder(req: Request, res: Response) {
-	let orderItemData, existedPizza, existedPizzaExtra, existedPizzaCrust, existedPizzaOuterCrust, existedPizzaSize,
-		existedOrder, existedOrderItem;
+	let orderItemData, existedPizza = null, existedPizzaExtra = null, existedPizzaCrust = null,
+		existedPizzaOuterCrust = null, existedPizzaSize = null,
+		existedOrder = null, existedOrderItem = null;
 
 	try {
 		orderItemData = CreateCartItemSchema.parse(req.body);
@@ -47,15 +48,15 @@ export default async function addItemToOrder(req: Request, res: Response) {
 			where: {id: orderItemData.pizzaID},
 		})
 
-		existedPizzaExtra = await PizzaExtraRepository.findOne({
+		if (orderItemData.pizzaExtraID) existedPizzaExtra = await PizzaExtraRepository.findOne({
 			where: {id: orderItemData.pizzaExtraID}
 		})
 
-		existedPizzaCrust = await PizzaCrustRepository.findOne({
+		if (orderItemData.pizzaCrustID) existedPizzaCrust = await PizzaCrustRepository.findOne({
 			where: {id: orderItemData.pizzaCrustID}
 		})
 
-		existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
+		if (orderItemData.pizzaOuterCrustID) existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
 			where: {id: orderItemData.pizzaOuterCrustID}
 		})
 
@@ -74,9 +75,9 @@ export default async function addItemToOrder(req: Request, res: Response) {
 		existedOrderItem = await orderItemRepository.findOne({
 			where: {
 				pizza: {id: orderItemData.pizzaID},
-				crust: {id: orderItemData.pizzaCrustID},
-				outerCrust: {id: orderItemData.pizzaOuterCrustID},
-				extra: {id: orderItemData.pizzaExtraID},
+				crust: orderItemData.pizzaCrustID ? {id: orderItemData.pizzaCrustID} : undefined,
+				outerCrust: orderItemData.pizzaOuterCrustID? {id: orderItemData.pizzaOuterCrustID} : undefined,
+				extra: orderItemData.pizzaExtraID ? {id: orderItemData.pizzaExtraID} : undefined,
 				size: {id: orderItemData.pizzaSizeID},
 				order: {id: orderItemData.orderID}
 			},
@@ -90,10 +91,11 @@ export default async function addItemToOrder(req: Request, res: Response) {
 
 	if (!existedPizza) return res.NotFound([{message: `Pizza with id ${orderItemData.pizzaID} not found.`}])
 	if (!existedOrder) return res.NotFound([{message: `Order with id ${orderItemData.orderID} not found.`}]);
+	if (!existedPizzaSize) return res.NotFound([{message: `Pizza size with id ${orderItemData.pizzaSizeID} not found.`}]);
 	if (existedOrder.user.id != req.userID) return res.Forbidden([{message: `You cannot access others order.`}])
 
 	if (existedOrderItem) {
-		existedOrderItem.quantity += 1;
+		existedOrderItem.quantity += orderItemData.quantity;
 		await orderItemRepository.save(existedOrderItem);
 
 		return res.Ok(existedOrderItem);

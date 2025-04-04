@@ -1,39 +1,35 @@
 import {Request, Response} from "express";
-import {z} from "zod";
 import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
 import {AppDataSource} from "@root/data-source";
 import OrderItem from "@root/entity/OrderItem";
+import Number from "@root/schemas/Number";
 
-const CartItemRepository = AppDataSource.getRepository(OrderItem);
+const OrderItemRepository = AppDataSource.getRepository(OrderItem);
 
 export default async function removeItemFromOrder(req: Request, res: Response) {
-  let cartItemID;
-  try {
-    cartItemID = z.string().regex(/^\d+$/).transform(Number).parse(req.params.id);
-  } catch (error) {
-    logger.warn(error);
-    return res.BadRequest(extractErrorsFromZod(error));
-  }
+	let orderItemID;
+	try {
+		orderItemID = Number.parse(req.params.id);
+	} catch (error) {
+		logger.warn(error);
+		return res.BadRequest(extractErrorsFromZod(error));
+	}
 
-  try {
-    const existedCartItem = await CartItemRepository.findOne({
-      where: {id: cartItemID}
-    });
+	try {
+		const existedCartItem = await OrderItemRepository.findOne({
+			where: {id: orderItemID}
+		});
 
-    if (existedCartItem) {
-      if (existedCartItem.quantity > 1) {
-        existedCartItem.quantity -= 1;
-        await CartItemRepository.save(existedCartItem);
-      }
-      await CartItemRepository.delete(existedCartItem.id);
+		if (existedCartItem) {
+			await OrderItemRepository.delete(existedCartItem.id);
 
-      return res.Ok(existedCartItem);
-    }
+			return res.Ok(existedCartItem);
+		}
 
-    return res.NotFound([{message: `Could not find cart item with id ${cartItemID}`}]);
-  } catch (e) {
-    logger.error(e);
-    return res.InternalServerError({});
-  }
+		return res.NotFound([{message: `Could not find cart item with id ${orderItemID}`}]);
+	} catch (e) {
+		logger.error(e);
+		return res.InternalServerError({});
+	}
 }

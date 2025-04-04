@@ -8,81 +8,72 @@ import PizzaCrust from "@root/entity/PizzaCrust";
 import PizzaExtras from "@root/entity/PizzaExtras";
 import PizzaSize from "@root/entity/PizzaSize";
 import PizzaOuterCrust from "@root/entity/PizzaOuterCrust";
+import NUMBER from "@root/schemas/Number";
 
-const CartItemRepository = AppDataSource.getRepository(OrderItem);
+const OrderItemRepository = AppDataSource.getRepository(OrderItem);
 const PizzaCrustRepository = AppDataSource.getRepository(PizzaCrust)
 const PizzaExtraRepository = AppDataSource.getRepository(PizzaExtras)
 const PizzaSizeRepository = AppDataSource.getRepository(PizzaSize)
 const PizzaOuterCrustRepository = AppDataSource.getRepository(PizzaOuterCrust)
 
-const UpdateCartItemSchema = z.object({
-  id: z.string().regex(/^\d+$/).transform(Number),
-  quantity: z.string().regex(/^\d+$/).transform(Number),
-  pizzaCrustID: z.string().regex(/^\d+$/).transform(Number),
-  pizzaOuterCrustID: z.string().regex(/^\d+$/).transform(Number),
-  pizzaExtraID: z.string().regex(/^\d+$/).transform(Number),
-  pizzaSizeID: z.string().regex(/^\d+$/).transform(Number),
-  note: z.string().optional(),
+const UpdateOrderItemSchema = z.object({
+	id: NUMBER,
+	pizzaCrustID: NUMBER.nullable().optional(),
+	pizzaOuterCrustID: NUMBER.nullable().optional(),
+	pizzaExtraID: NUMBER.nullable().optional(),
+	pizzaSizeID: NUMBER,
+	quantity: NUMBER,
+	note: z.string().optional(),
 })
 
 export default async function updateOrderItem(req: Request, res: Response) {
-  let newCartItem;
-  try {
-    newCartItem = UpdateCartItemSchema.parse(req.body);
-  } catch (error) {
-    logger.warn(error);
-    return res.BadRequest(extractErrorsFromZod(error))
-  }
+	let orderItemData, existedPizzaExtra = null, existedPizzaCrust = null,
+		existedPizzaOuterCrust = null, existedPizzaSize = null, existedOrderItem = null;
 
-  try {
-    const existedCartItem = await CartItemRepository.findOne({
-      where: {id: newCartItem.id},
-      relations: {
-        pizza: true,
-        order: {orderItems: true, user: true}
-      },
-    });
+	try {
+		orderItemData = UpdateOrderItemSchema.parse(req.body);
+	} catch (error) {
+		logger.warn(error);
+		return res.BadRequest(extractErrorsFromZod(error))
+	}
 
-    if (!existedCartItem) {
-      return res.NotFound([{message: `Cart with id ${newCartItem.id} not found`}]);
-    }
+	try {
+		existedOrderItem = await OrderItemRepository.findOne({
+			where: {id: orderItemData.id},
+			relations: {
+				pizza: true, crust: true, outerCrust: true, extra: true, size: true, order: {orderItems: true}
+			}
+		});
 
-    if (existedCartItem.order.user.id != req.userID) {
-      return res.Forbidden([{message: `You cannot access others cart`}])
-    }
+		if (orderItemData.pizzaExtraID) existedPizzaExtra = await PizzaExtraRepository.findOne({
+			where: {id: orderItemData.pizzaExtraID}
+		})
 
-    const existedPizzaExtra = await PizzaExtraRepository.findOne({
-      where: {id: newCartItem.pizzaExtraID}
-    })
-    const pizzaExtra = existedPizzaExtra || null;
+		if (orderItemData.pizzaCrustID) existedPizzaCrust = await PizzaCrustRepository.findOne({
+			where: {id: orderItemData.pizzaCrustID}
+		})
 
-    const existedPizzaCrust = await PizzaCrustRepository.findOne({
-      where: {id: newCartItem.pizzaCrustID}
-    })
-    const pizzaCrust = existedPizzaCrust || null;
+		if (orderItemData.pizzaOuterCrustID) existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
+			where: {id: orderItemData.pizzaOuterCrustID}
+		})
 
-    const existedPizzaOuterCrust = await PizzaOuterCrustRepository.findOne({
-      where: {id: newCartItem.pizzaOuterCrustID}
-    })
-    const pizzaOuterCrust = existedPizzaOuterCrust || null;
+		existedPizzaSize = await PizzaSizeRepository.findOne({
+			where: {id: orderItemData.pizzaSizeID}
+		})
 
-    const existedPizzaSize = await PizzaSizeRepository.findOne({
-      where: {id: newCartItem.pizzaSizeID}
-    })
-    const pizzaSize = existedPizzaSize || null;
+		if (!existedOrderItem) return res.NotFound([{message: `Order item with id ${orderItemData.id} not found.`}])
 
-    existedCartItem.quantity = newCartItem.quantity;
-    existedCartItem.crust = pizzaCrust;
-    existedCartItem.outerCrust = pizzaOuterCrust;
-    existedCartItem.extra = pizzaExtra;
-    existedCartItem.size = pizzaSize;
-    existedCartItem.note = newCartItem.note || "";
+		Object.assign(existedOrderItem, existedOrderItem);
+		existedOrderItem.size = existedPizzaSize;
+		existedOrderItem.extra = existedPizzaExtra;
+		existedOrderItem.crust = existedPizzaCrust;
+		existedOrderItem.outerCrust = existedPizzaOuterCrust;
 
-    await CartItemRepository.save(existedCartItem);
+		await OrderItemRepository.save(existedOrderItem);
 
-    return res.Ok(existedCartItem);
-  } catch (error) {
-    logger.error(error);
-    return res.InternalServerError({});
-  }
+		return res.Ok(existedOrderItem);
+	} catch (error) {
+		logger.error(error);
+		return res.InternalServerError({});
+	}
 }

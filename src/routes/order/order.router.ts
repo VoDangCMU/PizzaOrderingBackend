@@ -9,14 +9,14 @@ import getAllOrder from "@root/routes/order/getAllOrder";
 import getAllOrderItems from "@root/routes/order/getAllOrderItems";
 import isAdmin from "@root/middlewares/isAdmin";
 
-const cart = Router();
+const orderRouter = Router();
 
-cart.get("/get-by-id/:id", isAuth, getOrder);
-cart.get("/get-all", isAuth, isAdmin, getAllOrder);
-cart.get("/get-all-order-items/", isAuth, isAdmin, getAllOrderItems);
-cart.post("/create", isAuth, createOrder);
-cart.post("/add-item", isAuth, addItemToOrder);
-cart.delete("/delete-item/:id", isAuth, removeItemFromOrder);
-cart.put("/update-item/", isAuth, updateOrderItem);
+orderRouter.get("/get-by-id/:id", isAuth, getOrder);
+orderRouter.get("/get-all", isAuth, isAdmin, getAllOrder);
+orderRouter.get("/get-all-order-items/", isAuth, isAdmin, getAllOrderItems);
+orderRouter.post("/create", isAuth, createOrder);
+orderRouter.post("/add-item", isAuth, addItemToOrder);
+orderRouter.delete("/delete-item/:id", isAuth, removeItemFromOrder);
+orderRouter.put("/update-item/", isAuth, updateOrderItem);
 
-module.exports = cart;
+module.exports = orderRouter;
