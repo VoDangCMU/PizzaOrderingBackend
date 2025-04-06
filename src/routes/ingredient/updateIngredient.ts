@@ -4,49 +4,88 @@ import {extractErrorsFromZod} from "@root/utils";
 import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import Ingredients from "@root/entity/Ingredients";
+import Number from "@root/schemas/Number";
 
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
 const UpdatePizzaParams = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
-    name: z.string(),
+	id: Number,
+	name: z.string(),
 })
 
-export default function updateIngredient (req: Request, res: Response) {
-    const _body = req.body;
+/**
+ * @swagger
+ * /ingredients/update/:
+ *   put:
+ *     tags: [Ingredient]
+ *     summary: Update an ingredient by ID
+ *     description: Updates the details of an ingredient specified by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the ingredient to update.
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: ingredient
+ *         required: true
+ *         description: The ingredient object containing updated details.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Ingredient successfully updated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Ingredient not found.
+ *       500:
+ *         description: Internal server error.
+ */
 
-    const parsed = UpdatePizzaParams.safeParse(_body);
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+export default async function updateIngredient(req: Request, res: Response) {
+	const parsedIngredient = UpdatePizzaParams.safeParse(req.body);
+	let ingredient;
 
-    const ingredient = parsed.data;
+	if (parsedIngredient.error) {
+		logger.warn(parsedIngredient.error);
+		return res.BadRequest(extractErrorsFromZod(parsedIngredient.error));
+	}
 
-    IngredientRepository.findOne({
-        where: {
-            id: ingredient.id
-        }
-    })
-        .then(existedIngredient => {
-            if (!existedIngredient) {
-                res.NotFound({});
-                return;
-            }
+	const ingredientData = parsedIngredient.data;
 
-            existedIngredient.name = ingredient.name;
+	try {
+		ingredient = await IngredientRepository.findOne({
+			where: {
+				id: ingredientData.id
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-            IngredientRepository.save(existedIngredient)
-                .then(() => res.Ok(existedIngredient))
-                .catch(err => {
-                    logger.error(err)
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	if (!ingredient) return res.NotFound([{message: `Ingredient with id ${ingredientData.id} not found`}]);
+	ingredient.name = ingredientData.name;
+
+	try {
+		await IngredientRepository.save(ingredient)
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	return res.Ok(ingredient);
 }

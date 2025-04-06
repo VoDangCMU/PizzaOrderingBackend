@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import {AppDataSource} from "@root/data-source";
 import PizzaIngredient from "@root/entity/PizzaIngredient";
 import Ingredients from "@root/entity/Ingredients";
@@ -6,9 +6,12 @@ import Pizza from "@root/entity/Pizza";
 import {z} from "zod";
 import {extractErrorsFromZod} from "@root/utils";
 import logger from "@root/logger";
+import Number from "@root/schemas/Number";
 
 const UpdatePizzaIngredientSchema = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number),
+	id: Number,
+	pizzaId: Number,
+	ingredientId: Number
 })
 
 const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
@@ -16,69 +19,43 @@ const IngredientRepository = AppDataSource.getRepository(Ingredients);
 const PizzaRepository = AppDataSource.getRepository(Pizza);
 
 export default async function updatePizzaIngredient(req: Request, res: Response) {
-    const pizzaIngredientId = req.params.id;
-    const pizzaId = req.body.pizzaId;
-    const ingredientId = req.body.ingredientId;
-    const parsedPizzaIngredient = UpdatePizzaIngredientSchema.safeParse({id: pizzaIngredientId});
-    const parsedIngredientId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(ingredientId);
-    const parsedPizzaId = z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number).safeParse(pizzaId);
+	let pizzaIngredientData, existedPizza, existedIngredient, existedPizzaIngredient;
 
-    if(parsedPizzaIngredient.error) {
-        res.BadRequest(parsedPizzaIngredient.error);
-        return;
-    }
+	try {
+		pizzaIngredientData = UpdatePizzaIngredientSchema.parse(req.body);
+	} catch (e) {
+		logger.warn(e);
+		return res.BadRequest(extractErrorsFromZod(e));
+	}
 
-    if (parsedIngredientId.error) {
-        res.BadRequest(extractErrorsFromZod(parsedIngredientId.error));
-        return;
-    }
+	try {
+		existedPizzaIngredient = await PizzaIngredientRepository.findOne({
+			where: {id: pizzaIngredientData.id}
+		})
 
-    if (parsedPizzaId.error) {
-        res.BadRequest(extractErrorsFromZod(parsedPizzaId.error));
-        return;
-    }
+		existedIngredient = await IngredientRepository.findOne({
+			where: {id: pizzaIngredientData.ingredientId}
+		});
 
-    const pizzaIngredientIdParsed = parsedPizzaIngredient.data.id;
+		existedPizza = await PizzaRepository.findOne({
+			where: {id: pizzaIngredientData.pizzaId}
+		});
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-    try {
-        const existedPizzaIngredient = await PizzaIngredientRepository.findOne({
-            where: {
-                id: pizzaIngredientIdParsed
-            }
-        })
-        if (!existedPizzaIngredient) {
-            res.NotFound("PizzaIngredient not found");
-            return;
-        }
+	if (!existedIngredient) return res.BadRequest([{message: `Ingredient with id ${pizzaIngredientData.ingredientId} not found.`}]);
+	if (!existedPizza) return res.BadRequest([{message: `Pizza with id ${pizzaIngredientData.pizzaId} not found.`}]);
+	if (!existedPizzaIngredient) return res.BadRequest([{message: `Pizza ingredient with id ${pizzaIngredientData.id} not found.`}]);
 
-        const existedIngredient = await IngredientRepository.findOne({
-            where: {
-                id: parsedIngredientId.data
-            }
-        });
-        if (!existedIngredient) {
-            res.NotFound("Ingredient not found");
-            return;
-        }
+	existedPizzaIngredient.ingredient = existedIngredient;
+	existedPizzaIngredient.pizza = existedPizza;
 
-        const existedPizza = await PizzaRepository.findOne({
-            where: {
-                id: parsedPizzaId.data
-            }
-        });
-        if (!existedPizza) {
-            res.NotFound("Pizza not found");
-            return;
-        }
+	try {
+		await PizzaIngredientRepository.save(existedPizzaIngredient);
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-        existedPizzaIngredient.ingredient = existedIngredient;
-        existedPizzaIngredient.pizza = existedPizza;
-
-        await PizzaIngredientRepository.save(existedPizzaIngredient);
-        res.Ok(existedPizzaIngredient);
-    }
-    catch(err) {
-        logger.error(err);
-        res.InternalServerError({});
-    }
+	res.Ok(existedPizzaIngredient);
 }

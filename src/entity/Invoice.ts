@@ -1,6 +1,6 @@
 import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import Users from "@root/entity/Users";
-import Cart from "@root/entity/Cart";
+import Order from "@root/entity/Order";
 
 export const INVOICE_TABLE_NAME = "invoices";
 
@@ -21,8 +21,8 @@ export default class Invoice {
     @ManyToOne(() => Users, {onDelete: "CASCADE"})
     user: Users;
 
-    @ManyToOne(() => Cart, {onDelete: "CASCADE"})
-    cart: Cart;
+    @ManyToOne(() => Order, {onDelete: "CASCADE"})
+    order: Order;
 
     @CreateDateColumn()
     createdAt: Date

@@ -1,40 +1,36 @@
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import {AppDataSource} from "@root/data-source";
 import PizzaIngredient from "@root/entity/PizzaIngredient";
 import {z} from "zod";
-import logger from "@root/logger";
 
 const PizzaIngredientSchema = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
+	id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
 })
 
 const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
 
-export default function getPizzaIngredient(req: Request, res: Response) {
-    const pizzaIngredientId = req.params.id;
+export default async function getPizzaIngredient(req: Request, res: Response) {
+	const pizzaIngredientData = PizzaIngredientSchema.safeParse({id: req.params.id});
+	let existedPizzaIngredient;
 
-    const parsedId = PizzaIngredientSchema.safeParse({id: pizzaIngredientId});
-    if (parsedId.error) {
-        res.BadRequest(parsedId.error);
-        return;
-    }
+	if (pizzaIngredientData.error) {
+		res.BadRequest(pizzaIngredientData.error);
+		return;
+	}
 
-    const pizzaIngredientIdParsed = parsedId.data.id;
+	const pizzaIngredientId = pizzaIngredientData.data.id;
 
-    PizzaIngredientRepository.findOne({
-        where: {
-            id: pizzaIngredientIdParsed
-        }
-    })
-        .then(pizzaIngredient => {
-            if (!pizzaIngredient) {
-                res.NotFound("PizzaIngredient not found");
-                return;
-            }
-            res.Ok(pizzaIngredient);
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	try {
+		existedPizzaIngredient = await PizzaIngredientRepository.findOne({
+			where: {
+				id: pizzaIngredientId
+			},
+			relations: {pizza: true, ingredient: true}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	if (!existedPizzaIngredient) return res.NotFound([{message: `Pizza Ingredient with id ${pizzaIngredientId} not found.`}])
+	res.Ok(existedPizzaIngredient);
 }

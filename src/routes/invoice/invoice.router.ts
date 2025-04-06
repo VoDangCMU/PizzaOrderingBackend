@@ -10,10 +10,10 @@ import isAdmin from "@root/middlewares/isAdmin";
 
 const invoice = Router();
 
-invoice.post('/', createInvoice);
-invoice.get('/:id', getInvoice);
-invoice.get("/", isAuth, isAdmin, getAllInvoices);
-invoice.put('/:id', updateInvoice);
-invoice.delete('/:id', deleteInvoice);
+invoice.post('/create', createInvoice);
+invoice.get('/get-by-id/:id', getInvoice);
+invoice.get("/get-all", isAuth, isAdmin, getAllInvoices);
+invoice.put('/update', updateInvoice);
+invoice.delete('/delete/:id', deleteInvoice);
 
 module.exports = invoice;

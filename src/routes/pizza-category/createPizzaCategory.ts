@@ -8,42 +8,85 @@ import PizzaCategories from "@root/entity/PizzaCategories";
 const PizzaCategoryRepository = AppDataSource.getRepository(PizzaCategories);
 
 const CreatePizzaCategorySchema = z.object({
-    name: z.string(),
+	name: z.string(),
+	description: z.string(),
 })
 
-export function createPizzaCategory(req: Request, res: Response) {
-    const _body = req.body;
-    const parsed = CreatePizzaCategorySchema.safeParse(_body);
+/**
+ * @swagger
+ * /pizza-category/create:
+ *   post:
+ *     tags: [Pizza-Categories]
+ *     summary: Create a new pizza category
+ *     description: Adds a new pizza category to the database.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the pizza category.
+ *               description:
+ *                 type: string
+ *                 description: A brief description of the pizza category.
+ *     responses:
+ *       200:
+ *         description: Pizza category successfully created.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors or if the category already exists.
+ *       500:
+ *         description: Internal server error.
+ */
 
-    if (parsed.error) {
-        logger.warn(`Error: ${parsed.error.message}`);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
 
-    const category = parsed.data;
+export async function createPizzaCategory(req: Request, res: Response) {
+	const parsed = CreatePizzaCategorySchema.safeParse(req.body);
+	let existedCategory;
 
-    PizzaCategoryRepository.findOne({
-        where: {name: category.name.toLowerCase()},
-    })
-        .then(existedCategory => {
-            if (existedCategory) {
-                return res.BadRequest([{message: "Category already exists", detail: existedCategory}]);
-            }
+	if (parsed.error) {
+		logger.warn(`Error: ${parsed.error}`);
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-            const createdCategory = new PizzaCategories();
+	const categoryData = parsed.data;
 
-            createdCategory.name = category.name.toLowerCase();
+	try {
+		existedCategory = await PizzaCategoryRepository.findOne({
+			where: {name: categoryData.name.toLowerCase()},
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
 
-            PizzaCategoryRepository.save(createdCategory)
-                .then(() => res.Ok(createdCategory))
-                .catch(err => {
-                    logger.error(err);
-                    res.InternalServerError({});
-                });
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	if (existedCategory) {
+		return res.BadRequest([{message: "Category already exists", detail: existedCategory}]);
+	}
+
+	const createdCategory = new PizzaCategories();
+
+	createdCategory.name = categoryData.name.toLowerCase();
+	createdCategory.description = categoryData.description;
+
+	try {
+		await PizzaCategoryRepository.save(createdCategory);
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	res.Ok(createdCategory)
 }

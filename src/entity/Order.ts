@@ -1,11 +1,11 @@
 import {CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import Users from "@root/entity/Users";
-import CartItem from "@root/entity/CartItem";
+import OrderItem from "@root/entity/OrderItem";
 
-export const CART_TABLE_NAME = "carts";
+export const ORDER_TABLE_NAME = "orders";
 
-@Entity({name: CART_TABLE_NAME})
-export default class Cart {
+@Entity({name: ORDER_TABLE_NAME})
+export default class Order {
     @PrimaryGeneratedColumn({type: "bigint"})
     id: number;
 
@@ -18,6 +18,6 @@ export default class Cart {
     @UpdateDateColumn()
     updatedAt: Date
 
-    @OneToMany(() => CartItem, (cartItem) => cartItem.cart, {onDelete: "CASCADE"})
-    cartItems: Array<CartItem>;
+    @OneToMany(() => OrderItem, (cartItem) => cartItem.order, {onDelete: "CASCADE"})
+    orderItems: Array<OrderItem>;
 }
