@@ -16,29 +16,32 @@ export default async function deleteFeedback(req: Request, res: Response) {
     const parsed = FeedbackIdSchema.safeParse({ id: req.params.id });
     if (parsed.error) {
         logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
+        return res.BadRequest(extractErrorsFromZod(parsed.error));
     }
 
     const feedbackId = parsed.data.id;
 
+    let feedback;
+
     try {
-        const feedback = await FeedbackRepository.findOne({
+        feedback = await FeedbackRepository.findOne({
             where: {
                 id: feedbackId
             }
         });
-
-        if (!feedback) {
-            res.NotFound([{ message: `Feedback with id ${feedbackId} not found` }]);
-            return;
-        }
-
-        await FeedbackRepository.delete(feedbackId);
-        res.Ok(feedback);
     } catch (e) {
-        logger.error(e);
-        res.InternalServerError(e);
-        return;
+        return res.InternalServerError(e);
     }
+
+    if (!feedback) {
+        return res.NotFound([{ message: `Feedback with id ${feedbackId} not found` }]);
+    }
+
+    try {
+        await FeedbackRepository.delete(feedbackId);
+    } catch (e) {
+        return res.InternalServerError(e);
+    }
+
+    return res.Ok(feedback);
 }
