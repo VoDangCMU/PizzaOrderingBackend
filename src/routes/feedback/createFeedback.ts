@@ -22,60 +22,70 @@ export default async function createFeedback(req: Request, res: Response) {
     const parsed = CreateFeedbackParams.safeParse(req.body);
     if (parsed.error) {
         logger.warn(parsed.error);
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
+        return res.BadRequest(extractErrorsFromZod(parsed.error));
     }
 
     const pizzaId = parsed.data.pizzaId;
     const invoiceId = parsed.data.invoiceId;
     const feedback = parsed.data.feedback;
 
+    let pizza;
+    let invoice;
+    let existedFeedback;
+
     try {
-        const pizza = await PizzaRepository.findOne({
+        pizza = await PizzaRepository.findOne({
             where: {
                 id: pizzaId
             }
         })
+    } catch (e) {
+        return res.InternalServerError(e);
+    }
 
-        if (!pizza) {
-            res.BadRequest([{ message: `Pizza with ID ${pizzaId} not found`}]);
-            return;
-        }
+    if (!pizza) {
+        return res.BadRequest([{message: `Pizza with ID ${pizzaId} not found`}]);
+    }
 
-        const invoice = await InvoiceRepository.findOne({
+    try {
+        invoice = await InvoiceRepository.findOne({
             where: {
                 id: invoiceId
             }
         })
+    } catch (e) {
+        return res.InternalServerError(e);
+    }
 
-        if (!invoice) {
-            res.BadRequest([{ message: `Invoice with ID ${invoiceId} not found`}]);
-            return;
-        }
+    if (!invoice) {
+        return res.BadRequest([{message: `Invoice with ID ${invoiceId} not found`}]);
+    }
 
-        const existingFeedback = await FeedbackRepository.findOne({
+    try {
+        existedFeedback = await FeedbackRepository.findOne({
             where: {
-                pizza: { id: pizzaId },
-                invoice: { id: invoiceId }
+                pizza: {id: pizzaId},
+                invoice: {id: invoiceId}
             }
         });
-
-        if (existingFeedback) {
-            res.BadRequest([{ message: `Feedback for Pizza ID ${pizzaId} and Invoice ID ${invoiceId} already exists.` }]);
-            return;
-        }
-
-        const createFeedback = new Feedback();
-        createFeedback.pizza = pizza;
-        createFeedback.invoice = invoice;
-        createFeedback.feedback = feedback;
-
-        await FeedbackRepository.save(createFeedback);
-
-        res.Ok(createFeedback);
     } catch (e) {
-        logger.error(e);
-        res.InternalServerError(e);
-        return;
+        return res.InternalServerError(e);
     }
+
+    if (existedFeedback) {
+        return res.BadRequest([{message: `Feedback for Pizza ID ${pizzaId} and Invoice ID ${invoiceId} already exists.`}]);
+    }
+
+    const createFeedback = new Feedback();
+    createFeedback.pizza = pizza;
+    createFeedback.invoice = invoice;
+    createFeedback.feedback = feedback;
+
+    try {
+        await FeedbackRepository.save(createFeedback);
+    } catch (e) {
+        return res.InternalServerError(e);
+    }
+
+    return res.Ok(createFeedback);
 }
