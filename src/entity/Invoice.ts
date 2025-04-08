@@ -10,9 +10,6 @@ export default class Invoice {
     id: number;
 
     @Column()
-    cartId: number;
-
-    @Column()
     price: number;
 
     @Column({default: false})
