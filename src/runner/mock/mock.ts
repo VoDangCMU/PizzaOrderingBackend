@@ -1,5 +1,5 @@
 import {extractAll} from "@root/runner/mock/extract_formated_data";
-import {mockCategories, mockIngredients, mockPizza} from "@root/runner/mock/mocker";
+import {mockCategories, mockIngredients, mockOrders, mockPizza} from "@root/runner/mock/mocker";
 import {AppDataSource} from "@root/data-source";
 import logger from "@root/logger";
 
@@ -15,4 +15,6 @@ import logger from "@root/logger";
 	await mockIngredients();
 	logger.info('Mocking Pizzas...');
 	await mockPizza();
+	logger.info('Mocking Orders...');
+	await mockOrders();
 })()

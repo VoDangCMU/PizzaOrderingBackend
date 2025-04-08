@@ -1,9 +1,5 @@
 export type TPizzaSize = 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL';
 
-export interface IOrder {
-  [key: string]: Array<IPizzaData>
-}
-
 export interface IRawPizzaData {
   pizza_id: string;
   order_id: string;
@@ -41,4 +37,16 @@ export interface IPizza {
   },
   category: string;
   ingredients: Array<string>;
+}
+
+interface IOrderItem {
+  pizza_name: string;
+  pizza_size: string;
+  order_date: string;
+  order_time: string;
+  quantity: number;
+}
+export interface IOrder {
+  order_id: number;
+  items: Array<IOrderItem>;
 }
