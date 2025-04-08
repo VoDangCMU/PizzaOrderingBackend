@@ -20,6 +20,9 @@ export default class PizzaCrust {
     @ManyToOne(() => Pizza, {onDelete: "CASCADE"})
     pizza: Pizza;
 
+    @Column({type: 'decimal', default: 100})
+    price: number;
+
     @CreateDateColumn()
     createdAt: Date;
 

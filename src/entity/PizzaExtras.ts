@@ -15,7 +15,7 @@ export default class PizzaExtras {
     @Column({default: 'Extra Cheese'})
     extra: string;
 
-    @Column({default: 1000, type: 'bigint'})
+    @Column({default: 1000, type: 'decimal'})
     price: number;
 
     @Column({

@@ -55,7 +55,7 @@ export async function extractPizzaData(): Promise<Array<IPizza>> {
 
           pizza_list.push(_pizza)
         } else {
-
+          existed.sizes[formated.pizza_size] = formated.unit_price;
         }
       })
       .on('end', async () => {
@@ -64,8 +64,32 @@ export async function extractPizzaData(): Promise<Array<IPizza>> {
   })
 }
 
-extractCategoryData()
-.then(data => console.log(data))
+export async function extractIngredients(): Promise<Set<string>> {
+  return new Promise(async (resolve, reject) => {
+    const ingredients = new Set<string>();
+    fs.createReadStream(csvDataFilePath)
+      .pipe(csv())
+      .on('data', async (data: IRawPizzaData) => {
+        const formated = transformRawData(data);
 
-extractPizzaName()
-.then(data => console.log(data))
+        formated.pizza_ingredients.forEach(el => ingredients.add(el))
+      })
+      .on('end', async () => {
+        resolve(ingredients)
+      });
+  })
+}
+
+export async function extractAll() {
+  const ingredients = await extractIngredients();
+  const pizza_name_list = await extractPizzaName();
+  const pizza_data = await extractPizzaData();
+  const categories = await extractCategoryData();
+
+  const basePath = path.join(__dirname, "temp");
+
+  fs.writeFileSync(path.join(basePath, "ingredients.json"), JSON.stringify(Array.from(ingredients)), 'utf-8');
+  fs.writeFileSync(path.join(basePath, "pizza_name_list.json"), JSON.stringify(Array.from(pizza_name_list)), 'utf-8');
+  fs.writeFileSync(path.join(basePath, "pizzas.json"), JSON.stringify(pizza_data), 'utf-8');
+  fs.writeFileSync(path.join(basePath, "categories.json"), JSON.stringify(Array.from(categories)), 'utf-8');
+}

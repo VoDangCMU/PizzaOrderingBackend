@@ -58,7 +58,7 @@
     "build:docker": "docker build -t vodang/pizza_backend .",
     "start:docker": "docker run -d -it --name pizza_backend vodang/pizza_backend",
     "start:test": "cross-env ENV=testing nodemon --config nodemon.json",
-    "mock": "ts-node ./src/runner/mock/extract_formated_data.ts"
+    "mock": "ts-node ./src/runner/mock/mock.ts"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.6.0",
