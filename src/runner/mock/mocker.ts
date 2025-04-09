@@ -28,13 +28,13 @@ const basePath = path.join(__dirname, "temp");
 
 export function generateUser() {
 	return {
-		username: faker.internet.username(),
+		username: faker.internet.username() + new Date().getTime().toString(),
 		password: bcrypt.hashSync(faker.internet.password(), env.BCRYPT_HASH_ROUND),
 		dateOfBirth: faker.date.birthdate(),
 		firstName: faker.person.firstName(),
 		lastName: faker.person.lastName(),
 		phone: faker.phone.number(),
-		email: faker.internet.email(),
+		email: new Date().getTime().toString() + "@gmail.com",
 		address: faker.location.streetAddress(),
 	}
 }
