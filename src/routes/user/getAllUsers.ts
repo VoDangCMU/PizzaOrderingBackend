@@ -1,40 +1,33 @@
 import {Request, Response} from 'express';
 import {AppDataSource} from "@root/data-source";
 import Users from "@root/entity/Users";
+import {z} from "zod";
+import logger from "@root/logger";
+import {extractErrorsFromZod} from "@root/utils";
 
 const UserRepository = AppDataSource.getRepository(Users);
 
-/**
- * @swagger
- * /user/get-all:
- *   get:
- *     tags: [User]
- *     summary: Retrieve a list of users
- *     description: Fetches all users from the database.
- *     responses:
- *       200:
- *         description: A list of users successfully retrieved.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   email:
- *                     type: string
- *       500:
- *         description: Internal server error.
- */
+const PageSizeSchema = z.object({pageSize: z.number().multipleOf(25).max(100).optional().default(25)});
+const PageSchema = z.object({page: z.number().optional().default(1)});
 
 export default async function getAllUsers (req: Request, res: Response) {
+    let _pageSize, _page;
+
     try {
-        const users = await UserRepository.find();
-        res.Ok(users);
+        _pageSize = PageSizeSchema.parse({pageSize: Number(req.query.pageSize)});
+        _page = PageSchema.parse({page: Number(req.query.page)});
+    } catch (error) {
+        logger.warn(error);
+        return res.BadRequest(extractErrorsFromZod(error))
+    }
+    try {
+        const [users, count] = await UserRepository.findAndCount({take: _pageSize.pageSize, skip: ((_page.page - 1) * _pageSize.pageSize)});
+        res.Ok({
+            users: users,
+            page: _page.page,
+            pageSize: _pageSize.pageSize,
+            totalPage: Math.ceil(count / _pageSize.pageSize),
+        });
     } catch(error) {
         res.InternalServerError(error);
     }
