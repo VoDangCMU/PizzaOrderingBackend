@@ -3,38 +3,35 @@ import {AppDataSource} from "@root/data-source";
 import Invoice from "@root/entity/Invoice";
 import {z} from "zod";
 import logger from "@root/logger";
+import NUMBER from "@root/schemas/Number";
+import {extractErrorsFromZod} from "@root/utils";
 
-const InvoiceSchema = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
+const InvoiceIdSchema = z.object({
+    id: NUMBER
 })
 
 const InvoiceRepository = AppDataSource.getRepository(Invoice);
 
 export default function getInvoice (req: Request, res: Response) {
-    const invoiceId = req.params.id;
-    const parsedId = InvoiceSchema.safeParse({id: invoiceId});
-
-    if (parsedId.error) {
-        res.BadRequest(parsedId.error);
-        return;
+    const parsed = InvoiceIdSchema.safeParse({id: req.params.id});
+    if(parsed.error) {
+        logger.warn(parsed.error);
+        return res.BadRequest(extractErrorsFromZod(parsed.error));
     }
 
-    const invoiceIdParsed = parsedId.data.id;
+    const invoiceId = parsed.data.id;
+    let invoice;
 
-    InvoiceRepository.findOne({
-        where: {
-            id: invoiceIdParsed
-        }
-    })
-        .then(invoice => {
-            if (!invoice) {
-                res.NotFound("Invoice not found");
-                return;
-            }
-            res.Ok(invoice);
+    try {
+        invoice = InvoiceRepository.findOne({
+            where: {id: invoiceId}
         })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+    } catch (e) {
+        res.InternalServerError(e);
+    }
+    if (!invoice) {
+        return res.NotFound([{ message: `Invoice with id ${invoiceId} not found` }]);
+    }
+
+    return res.Ok(invoice);
 }

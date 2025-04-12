@@ -1,41 +1,73 @@
-import { Request, Response } from "express";
-import { z } from "zod";
-import { AppDataSource } from "@root/data-source";
+import {Request, Response} from "express";
+import {z} from "zod";
+import {AppDataSource} from "@root/data-source";
 import Ingredients from "@root/entity/Ingredients";
 import logger from "@root/logger";
 
-const IngredientSchema = z.object({
-    name: z.string(),
-});
-
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
 
-export default function getIngredientByName(req: Request, res: Response) {
-    const name = req.query.name;
-    const parsed = IngredientSchema.safeParse({ name });
+const IngredientNameSchema = z.object({
+	name: z.string(),
+})
 
-    if (parsed.error) {
-        logger.warn(parsed.error);
-        res.BadRequest(parsed.error);
-        return;
-    }
+/**
+ * @swagger
+ * /ingredient/get-by-name/{name}:
+ *   get:
+ *     tags: [Ingredient]
+ *     summary: Retrieve a specific ingredient by name
+ *     description: Fetches a single ingredient from the database specified by its name.
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         required: true
+ *         description: The name of the ingredient to retrieve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ingredient successfully retrieved.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to validation errors.
+ *       404:
+ *         description: Ingredient not found.
+ *       500:
+ *         description: Internal server error.
+ */
 
-    const ingredient = parsed.data;
 
-    IngredientRepository.findOne({
-        where: {
-            name: ingredient.name
-        }
-    })
-        .then((ingredient) => {
-            if (!ingredient) {
-                res.NotFound([{ message: "Ingredient Not Found" }]);
-                return;
-            }
-            res.Ok(ingredient);
-        })
-        .catch((err) => {
-            logger.error(err);
-            res.InternalServerError({});
-        });
+export default async function getIngredientByName(req: Request, res: Response) {
+	const name = req.params.name;
+	const parsedIngredientName = IngredientNameSchema.safeParse({name});
+	let ingredient;
+
+	if (parsedIngredientName.error) {
+		logger.warn(parsedIngredientName.error);
+		return res.BadRequest(parsedIngredientName.error);
+	}
+
+	const ingredientName = parsedIngredientName.data.name;
+
+	try {
+		ingredient = await IngredientRepository.findOne({
+			where: {
+				name: ingredientName
+			}
+		})
+	} catch (e) {
+		return res.InternalServerError(e);
+	}
+
+	if (!ingredient) return res.NotFound([{message: `Ingredient with name ${ingredientName} not found`}]);
+
+	res.Ok(ingredient);
 }

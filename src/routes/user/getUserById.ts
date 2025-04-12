@@ -2,39 +2,71 @@ import {z} from "zod";
 import {AppDataSource} from "@root/data-source";
 import User from "@root/entity/Users";
 import {Request, Response} from "express";
-import logger from "@root/logger";
+import Number from "@root/schemas/Number";
 
 
 const UserIdSchema = z.object({
-    id: z.union([z.string().regex(/^\d+$/), z.number()]).transform(Number)
+	id: Number
 })
 
 const UserRepository = AppDataSource.getRepository(User);
 
-export default function getUserById (req: Request, res: Response) {
-    const userId = parseInt(req.params.id, 10);
+/**
+ * @swagger
+ * /user/get-by-id/{id}:
+ *   get:
+ *     tags: [User]
+ *     summary: Retrieve a user by ID
+ *     description: Fetches a single user from the database by their ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the user to retrieve.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User successfully retrieved.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Bad request due to invalid user ID.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 
-    const parsedId = UserIdSchema.safeParse({id: userId});
-    if(parsedId.error){
-        res.BadRequest(parsedId.error);
-        return;
-    }
+export default async function getUserById(req: Request, res: Response) {
+	const userId = parseInt(req.params.id, 10);
+	let user;
 
-    const userIdParsed = parsedId.data.id;
+	const parsedId = UserIdSchema.safeParse({id: userId});
+	if (parsedId.error) {
+		res.BadRequest(parsedId.error);
+		return;
+	}
 
-    UserRepository.findOne({
-        where: {id: userIdParsed},
-    })
-        .then(user => {
-            if (!user) {
-                res.NotFound("User not found");
-                return;
-            }
+	const userIdParsed = parsedId.data.id;
 
-            res.Ok(user);
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError({});
-        })
+	try {
+		user = await UserRepository.findOne({
+			where: {id: userIdParsed},
+		})
+	} catch (e) {
+		res.InternalServerError(e)
+	}
+
+	if (!user) return res.NotFound("User not found");
+	res.Ok(user);
 }

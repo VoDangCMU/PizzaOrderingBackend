@@ -5,63 +5,122 @@ import Users from "@root/entity/Users";
 import {compareSync} from "bcrypt";
 import jwt from 'jsonwebtoken';
 import env from "@root/env";
-const UserRepository = AppDataSource.getRepository(Users);
 import logger from "@root/logger";
 import {extractErrorsFromZod} from "@root/utils";
+import Boolean from "@root/schemas/Boolean";
+
+const UserRepository = AppDataSource.getRepository(Users);
 
 const LoginParamsSchema = z.object({
-    username: z.string(),
-    password: z.string(),
-    keepLogin: z.union([z.string(), z.boolean()]).optional().default(false),
+	username: z.string(),
+	password: z.string(),
+	keepLogin: Boolean.default(false),
 })
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticates a user and returns a JWT token.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The username or email of the user.
+ *               password:
+ *                 type: string
+ *                 description: The password of the user.
+ *               keepLogin:
+ *                 type: boolean
+ *                 description: Whether to keep the user logged in.
+ *                 default: false
+ *             required:
+ *               - username
+ *               - password
+ *     responses:
+ *       '200':
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authenticated user.
+ *       '400':
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
 export default async function login(req: Request, res: Response) {
-    logger.debug("Request Body", req.body);
+	let user;
 
-    const parsed = LoginParamsSchema.safeParse(req.body);
+	logger.debug("Request Body", req.body);
 
-    if (parsed.error) {
-        res.BadRequest(extractErrorsFromZod(parsed.error));
-        return;
-    }
+	const parsed = LoginParamsSchema.safeParse(req.body);
 
-    const loginParams = parsed.data;
+	if (parsed.error) {
+		res.BadRequest(extractErrorsFromZod(parsed.error));
+		return;
+	}
 
-    UserRepository.findOne({
-        where: [
-            {username: loginParams.username},
-            {email: loginParams.username},
-        ],
-        select: { username: true, password: true, id: true },
-    })
-        .then(user => {
-            if (!user) {
-                res.BadRequest("Username does not exist.");
-                return;
-            }
+	const loginParams = parsed.data;
 
-            logger.debug(user);
+	try {
+		user = await UserRepository.findOne({
+			where: [
+				{username: loginParams.username},
+				{email: loginParams.username},
+			],
+			select: {username: true, password: true, id: true},
+		})
+	} catch (e) {
+		return res.InternalServerError(e)
+	}
 
-            if (compareSync(loginParams.password, user.password)) {
+	if (!user) return res.BadRequest("Username does not exist.");
 
-                const token = jwt.sign({
-                    username: loginParams.username,
-                    userID: user.id,
-                }, env.JWT_SECRET, {
-                    algorithm: "HS256",
-                    expiresIn: "7d",
-                })
+	logger.debug("Existed user", user);
 
-                logger.debug("TOKEN", token);
+	if (!compareSync(loginParams.password, user.password)) {
+		logger.debug("Password mismatch");
+		return res.BadRequest([{message: "Password does not match."}]);
+	}
 
-                res.Ok(token);
-                return;
-            }
+	logger.debug("Password matched");
 
-            res.BadRequest("Password does not match.");
-        })
-        .catch(err => {
-            logger.error(err);
-            res.InternalServerError(err)
-        });
+	const token = jwt.sign({
+		username: loginParams.username,
+		userID: user.id,
+	}, env.JWT_SECRET, {
+		algorithm: "HS256",
+		expiresIn: "7d",
+	})
+
+	logger.debug("Signed token", token);
+
+	res.cookie('token', token, {maxAge: 3600 * 24 * 7});
+	return res.Ok(token);
 }

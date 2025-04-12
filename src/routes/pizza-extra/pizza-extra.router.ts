@@ -5,13 +5,12 @@ import updatePizzaExtra from "@root/routes/pizza-extra/updatePizzaExtra";
 import deletePizzaExtra from "@root/routes/pizza-extra/deletePizzaExtra";
 import isAuth from "@root/middlewares/isAuth";
 import getAllPizzaExtras from "@root/routes/pizza-extra/getAllPizzaExtras";
-import isAdmin from "@root/middlewares/isAdmin";
 
 const pizzaExtra = Router();
 
 pizzaExtra.post("/", createPizzaExtra)
 pizzaExtra.get("/:id", getPizzaExtra)
-pizzaExtra.get("/", isAuth, isAdmin, getAllPizzaExtras);
+pizzaExtra.get("/", getAllPizzaExtras);
 pizzaExtra.put("/:id", isAuth, updatePizzaExtra)
 pizzaExtra.delete("/:id", isAuth, deletePizzaExtra)
 

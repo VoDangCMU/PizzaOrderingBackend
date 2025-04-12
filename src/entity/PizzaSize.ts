@@ -12,7 +12,7 @@ export default class PizzaSize {
     @Column({default: PIZZA_SIZE[0], enum: PIZZA_SIZE})
     size: string;
 
-    @Column({default: 1000, type: 'bigint'})
+    @Column({default: 1000, type: 'decimal'})
     price: number;
 
     @Column({

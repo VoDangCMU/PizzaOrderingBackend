@@ -9,7 +9,7 @@ const Logger = {
             console.log(chalk.bgGreen.white("INFO "), ...args);
     },
     debug(...args: any[]) {
-        if (env.ENV === "development") {
+        if (env.ENV === "development" || env.ENV === "testing") {
             console.log(chalk.bgMagenta.white("DEBUG"), ...args);
         }
     },
