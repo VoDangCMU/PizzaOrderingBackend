@@ -8,6 +8,8 @@ import updateOrderItem from "@root/routes/order/updateOrderItem";
 import getAllOrder from "@root/routes/order/getAllOrder";
 import getAllOrderItems from "@root/routes/order/getAllOrderItems";
 import isAdmin from "@root/middlewares/isAdmin";
+import getOrderHistoryByUserID from "@root/routes/order/getOrderHistoryByUserID";
+import getOrderHistoryByUsername from "@root/routes/order/getOrderHistoryByUsername";
 
 const orderRouter = Router();
 
@@ -18,5 +20,7 @@ orderRouter.post("/create", isAuth, createOrder);
 orderRouter.post("/add-item", isAuth, addItemToOrder);
 orderRouter.delete("/delete-item/:id", isAuth, removeItemFromOrder);
 orderRouter.put("/update-item/", isAuth, updateOrderItem);
+orderRouter.get("/history/get-by-user-id/:id", getOrderHistoryByUserID);
+orderRouter.get("/history/get-by-username/:username", getOrderHistoryByUsername);
 
 module.exports = orderRouter;
