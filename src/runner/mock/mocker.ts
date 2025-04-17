@@ -14,6 +14,7 @@ import env from "@root/env";
 import Order from "@root/entity/Order";
 import OrderItem from "@root/entity/OrderItem";
 import moment from "moment";
+import PizzaImages from "@root/entity/PizzaImages";
 
 const CategoriesRepository = AppDataSource.getRepository(PizzaCategories);
 const IngredientRepository = AppDataSource.getRepository(Ingredients);
@@ -23,6 +24,7 @@ const PizzaIngredientRepository = AppDataSource.getRepository(PizzaIngredient);
 const UserRepository = AppDataSource.getRepository(Users);
 const OrderRepository = AppDataSource.getRepository(Order);
 const OrderItemRepository = AppDataSource.getRepository(OrderItem);
+const PizzaImageRepository = AppDataSource.getRepository(PizzaImages);
 
 const basePath = path.join(__dirname, "temp");
 
@@ -73,6 +75,7 @@ export async function mockPizza() {
 	const data: Array<IPizza> = JSON.parse(fs.readFileSync(path.join(basePath, "pizzas.json"), "utf8"));
 
 	for (const pizza of data) {
+		let existedPizza;
 		if (!(await PizzaRepository.exists({where: {name: pizza.name}}))) {
 			const createdPizza = new Pizza();
 
@@ -80,27 +83,37 @@ export async function mockPizza() {
 			createdPizza.description = faker.food.description();
 			createdPizza.category = (await CategoriesRepository.findOne({where: {name: pizza.category}}))!
 
-			await PizzaRepository.save(createdPizza);
-
-			for (const [key, value] of Object.entries(pizza.sizes)) {
-				const createdPizzaSize = new PizzaSize();
-
-				createdPizzaSize.size = key;
-				createdPizzaSize.price = value;
-				createdPizzaSize.pizza = createdPizza;
-
-				await PizzaSizeRepository.save(createdPizzaSize);
-			}
-
-			for (const ingredient of pizza.ingredients) {
-				const createdPizzaIngredient = new PizzaIngredient();
-
-				createdPizzaIngredient.pizza = createdPizza;
-				createdPizzaIngredient.ingredient = (await IngredientRepository.findOne({where: {name: ingredient}}))!
-
-				await PizzaIngredientRepository.save(createdPizzaIngredient);
-			}
+			existedPizza = await PizzaRepository.save(createdPizza);
 		}
+
+		if (!existedPizza) existedPizza = (await PizzaRepository.findOne({where: {name: pizza.name}}))!;
+
+		for (const [key, value] of Object.entries(pizza.sizes)) {
+			const createdPizzaSize = new PizzaSize();
+
+			createdPizzaSize.size = key;
+			createdPizzaSize.price = value;
+			createdPizzaSize.pizza = existedPizza;
+
+			await PizzaSizeRepository.save(createdPizzaSize);
+		}
+
+		for (const ingredient of pizza.ingredients) {
+			const createdPizzaIngredient = new PizzaIngredient();
+
+			createdPizzaIngredient.pizza = existedPizza;
+			createdPizzaIngredient.ingredient = (await IngredientRepository.findOne({where: {name: ingredient}}))!
+
+			await PizzaIngredientRepository.save(createdPizzaIngredient);
+		}
+
+		const createdPizzaImage = new PizzaImages();
+
+		createdPizzaImage.pizza = existedPizza;
+		createdPizzaImage.src = `https://pizzas.khoav4.com/${existedPizza.name}.png`
+		createdPizzaImage.alt = existedPizza.name
+
+		await PizzaImageRepository.save(createdPizzaImage);
 	}
 }
 
