@@ -29,121 +29,146 @@ const PizzaImageRepository = AppDataSource.getRepository(PizzaImages);
 const basePath = path.join(__dirname, "temp");
 
 export function generateUser() {
-	return {
-		username: faker.internet.username() + new Date().getTime().toString(),
-		password: bcrypt.hashSync(faker.internet.password(), env.BCRYPT_HASH_ROUND),
-		dateOfBirth: faker.date.birthdate(),
-		firstName: faker.person.firstName(),
-		lastName: faker.person.lastName(),
-		phone: faker.phone.number(),
-		email: new Date().getTime().toString() + "@gmail.com",
-		address: faker.location.streetAddress(),
-	}
+  return {
+    username: faker.internet.username() + new Date().getTime().toString(),
+    password: bcrypt.hashSync(faker.internet.password(), env.BCRYPT_HASH_ROUND),
+    dateOfBirth: faker.date.birthdate(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    phone: faker.phone.number(),
+    email: new Date().getTime().toString() + "@gmail.com",
+    address: faker.location.streetAddress(),
+  }
 }
 
 export async function mockCategories() {
-	const data: Array<string> = JSON.parse(fs.readFileSync(path.join(basePath, "categories.json"), "utf8"));
+  const data: Array<string> = JSON.parse(fs.readFileSync(path.join(basePath, "categories.json"), "utf8"));
 
-	for (const category of data) {
-		if (!(await CategoriesRepository.exists({where: {name: category}}))) {
-			const createdCategory = new PizzaCategories();
+  for (const category of data) {
+    if (!(await CategoriesRepository.exists({where: {name: category}}))) {
+      const createdCategory = new PizzaCategories();
 
-			createdCategory.name = category;
-			createdCategory.description = faker.food.description();
+      createdCategory.name = category;
+      createdCategory.description = faker.food.description();
 
-			await CategoriesRepository.save(createdCategory);
-		}
-	}
+      await CategoriesRepository.save(createdCategory);
+    }
+  }
 }
 
 export async function mockIngredients() {
-	const data: Array<string> = JSON.parse(fs.readFileSync(path.join(basePath, "ingredients.json"), "utf8"));
+  const data: Array<string> = JSON.parse(fs.readFileSync(path.join(basePath, "ingredients.json"), "utf8"));
 
-	for (const ingredient of data) {
-		if (!(await IngredientRepository.exists({where: {name: ingredient}}))) {
-			const createdIngredient = new Ingredients();
+  for (const ingredient of data) {
+    if (!(await IngredientRepository.exists({where: {name: ingredient}}))) {
+      const createdIngredient = new Ingredients();
 
-			createdIngredient.name = ingredient;
-			createdIngredient.description = faker.food.description();
+      createdIngredient.name = ingredient;
+      createdIngredient.description = faker.food.description();
 
-			await IngredientRepository.save(createdIngredient);
-		}
-	}
+      await IngredientRepository.save(createdIngredient);
+    }
+  }
 }
 
 export async function mockPizza() {
-	const data: Array<IPizza> = JSON.parse(fs.readFileSync(path.join(basePath, "pizzas.json"), "utf8"));
+  const data: Array<IPizza> = JSON.parse(fs.readFileSync(path.join(basePath, "pizzas.json"), "utf8"));
 
-	for (const pizza of data) {
-		let existedPizza;
-		if (!(await PizzaRepository.exists({where: {name: pizza.name}}))) {
-			const createdPizza = new Pizza();
+  for (const pizza of data) {
+    let existedPizza;
+    if (!(await PizzaRepository.exists({where: {name: pizza.name}}))) {
+      const createdPizza = new Pizza();
 
-			createdPizza.name = pizza.name;
-			createdPizza.description = faker.food.description();
-			createdPizza.category = (await CategoriesRepository.findOne({where: {name: pizza.category}}))!
+      createdPizza.name = pizza.name;
+      createdPizza.description = faker.food.description();
+      createdPizza.category = (await CategoriesRepository.findOne({where: {name: pizza.category}}))!
 
-			existedPizza = await PizzaRepository.save(createdPizza);
-		}
+      existedPizza = await PizzaRepository.save(createdPizza);
+    }
 
-		if (!existedPizza) existedPizza = (await PizzaRepository.findOne({where: {name: pizza.name}}))!;
+    if (!existedPizza) existedPizza = (await PizzaRepository.findOne({where: {name: pizza.name}}))!;
 
-		for (const [key, value] of Object.entries(pizza.sizes)) {
-			const createdPizzaSize = new PizzaSize();
+    for (const size of pizza.sizes) {
+      let existedPizzaSize = null;
+      if (!(await PizzaSizeRepository.exists({
+        where: {pizza: {id: existedPizza.id}, size: size.size}
+      }))) {
+        existedPizzaSize = new PizzaSize();
+      }
 
-			createdPizzaSize.size = key;
-			createdPizzaSize.price = value;
-			createdPizzaSize.pizza = existedPizza;
+      if (existedPizzaSize == null) existedPizzaSize = (await PizzaSizeRepository.findOne({
+        where: {
+          pizza: {id: existedPizza.id},
+          size: size.size
+        }
+      }))!;
 
-			await PizzaSizeRepository.save(createdPizzaSize);
-		}
+      existedPizzaSize.size = size.size;
+      existedPizzaSize.price = size.unit_price;
+      existedPizzaSize.pizzaNameID = size.pizza_name_id;
+      existedPizzaSize.pizza = existedPizza;
 
-		for (const ingredient of pizza.ingredients) {
-			const createdPizzaIngredient = new PizzaIngredient();
+      await PizzaSizeRepository.save(existedPizzaSize);
+    }
 
-			createdPizzaIngredient.pizza = existedPizza;
-			createdPizzaIngredient.ingredient = (await IngredientRepository.findOne({where: {name: ingredient}}))!
+    for (const ingredient of pizza.ingredients) {
+      let existedPizzaIngredient = null;
 
-			await PizzaIngredientRepository.save(createdPizzaIngredient);
-		}
+      if (!(await PizzaIngredientRepository.exists({where: {pizza: {id: existedPizza.id}, ingredient: {name: ingredient}}}))) {
+        existedPizzaIngredient = new PizzaIngredient();
+      }
 
-		const createdPizzaImage = new PizzaImages();
+      existedPizzaIngredient = (await PizzaIngredientRepository.findOne({where: {pizza: {id: existedPizza.id}, ingredient: {name: ingredient}}}))!;
 
-		createdPizzaImage.pizza = existedPizza;
-		createdPizzaImage.src = `https://pizzas.khoav4.com/${existedPizza.name}.png`
-		createdPizzaImage.alt = existedPizza.name
+      existedPizzaIngredient.pizza = existedPizza;
+      existedPizzaIngredient.ingredient = (await IngredientRepository.findOne({where: {name: ingredient}}))!
 
-		await PizzaImageRepository.save(createdPizzaImage);
-	}
+      await PizzaIngredientRepository.save(existedPizzaIngredient);
+    }
+
+    if (!(await PizzaImageRepository.exists({where: {pizza: {id: existedPizza.id}}}))) {
+      const createdPizzaImage = new PizzaImages();
+
+      createdPizzaImage.pizza = existedPizza;
+      createdPizzaImage.src = `https://pizzas.khoav4.com/${existedPizza.name}.png`
+      createdPizzaImage.alt = existedPizza.name
+      await PizzaImageRepository.save(createdPizzaImage);
+    }
+  }
 }
 
 export async function mockOrders() {
-	const data: Array<IOrder> = JSON.parse(fs.readFileSync(path.join(basePath, "orders.json"), "utf8"));
+  const data: Array<IOrder> = JSON.parse(fs.readFileSync(path.join(basePath, "orders.json"), "utf8"));
 
-	for (const order of data) {
-		const userData = generateUser();
-		const createdUser = new Users();
-		const createdOrder = new Order();
+  for (const order of data) {
+    const userData = generateUser();
+    const createdUser = new Users();
+    const createdOrder = new Order();
 
-		Object.assign(createdUser, userData);
+    Object.assign(createdUser, userData);
 
-		await UserRepository.save(createdUser);
+    await UserRepository.save(createdUser);
 
-		createdOrder.user = createdUser;
-		createdOrder.createdAt = moment(`${order.items[0].order_date} ${order.items[0].order_time}`, "DD/MM/YYYY HH:mm:ss").toDate();
+    createdOrder.user = createdUser;
+    createdOrder.createdAt = moment(`${order.items[0].order_date} ${order.items[0].order_time}`, "DD/MM/YYYY HH:mm:ss").toDate();
 
-		await OrderRepository.save(createdOrder);
+    await OrderRepository.save(createdOrder);
 
-		for (const item of order.items) {
-			const createdOrderItem = new OrderItem();
+    for (const item of order.items) {
+      const createdOrderItem = new OrderItem();
 
-			createdOrderItem.order = createdOrder;
-			createdOrderItem.pizza = (await PizzaRepository.findOne({where: {name: item.pizza_name}}))!;
-			createdOrderItem.quantity = item.quantity;
-			createdOrderItem.size = (await PizzaSizeRepository.findOne({where: {size: item.pizza_size, pizza: {name: item.pizza_name}}}))!
-			createdOrderItem.createdAt = moment(`${item.order_date} ${item.order_time}`, "DD/MM/YYYY HH:mm:ss").toDate();
+      createdOrderItem.order = createdOrder;
+      createdOrderItem.pizza = (await PizzaRepository.findOne({where: {name: item.pizza_name}}))!;
+      createdOrderItem.quantity = item.quantity;
+      createdOrderItem.size = (await PizzaSizeRepository.findOne({
+        where: {
+          size: item.pizza_size,
+          pizza: {name: item.pizza_name}
+        }
+      }))!
+      createdOrderItem.createdAt = moment(`${item.order_date} ${item.order_time}`, "DD/MM/YYYY HH:mm:ss").toDate();
 
-			await OrderItemRepository.save(createdOrderItem);
-		}
-	}
+      await OrderItemRepository.save(createdOrderItem);
+    }
+  }
 }

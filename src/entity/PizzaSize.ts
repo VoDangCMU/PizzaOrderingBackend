@@ -20,6 +20,9 @@ export default class PizzaSize {
     })
     image: string;
 
+    @Column({ default: "unnamed"})
+    pizzaNameID: string;
+
     @ManyToOne(() => Pizza, {onDelete: "CASCADE"})
     pizza: Pizza;
 
