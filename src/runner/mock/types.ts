@@ -30,11 +30,15 @@ export interface IPizzaData {
   pizza_name: string;
 }
 
+export interface IPizzaSizeData {
+  unit_price: number;
+  pizza_name_id: string;
+  size: TPizzaSize;
+}
+
 export interface IPizza {
   name: string;
-  sizes: {
-    [key: string]: number;
-  },
+  sizes: Array<IPizzaSizeData>,
   category: string;
   ingredients: Array<string>;
 }
