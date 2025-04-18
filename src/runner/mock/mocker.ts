@@ -99,7 +99,7 @@ export async function mockPizza() {
       if (existedPizzaSize == null) existedPizzaSize = (await PizzaSizeRepository.findOne({
         where: {
           pizza: {id: existedPizza.id},
-          size: size.size
+          size: size.size,
         }
       }))!;
 
@@ -114,11 +114,21 @@ export async function mockPizza() {
     for (const ingredient of pizza.ingredients) {
       let existedPizzaIngredient = null;
 
-      if (!(await PizzaIngredientRepository.exists({where: {pizza: {id: existedPizza.id}, ingredient: {name: ingredient}}}))) {
+      if (!(await PizzaIngredientRepository.exists({
+        where: {
+          pizza: {id: existedPizza.id},
+          ingredient: {name: ingredient}
+        }
+      }))) {
         existedPizzaIngredient = new PizzaIngredient();
       }
 
-      existedPizzaIngredient = (await PizzaIngredientRepository.findOne({where: {pizza: {id: existedPizza.id}, ingredient: {name: ingredient}}}))!;
+      existedPizzaIngredient = (await PizzaIngredientRepository.findOne({
+        where: {
+          pizza: {id: existedPizza.id},
+          ingredient: {name: ingredient}
+        }
+      }))!;
 
       existedPizzaIngredient.pizza = existedPizza;
       existedPizzaIngredient.ingredient = (await IngredientRepository.findOne({where: {name: ingredient}}))!
