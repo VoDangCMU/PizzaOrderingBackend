@@ -44,19 +44,32 @@ export async function extractPizzaData(): Promise<Array<IPizza>> {
         const formated = transformRawData(data);
 
         const existed = pizza_list.find((pizza: IPizza) => pizza.name == formated.pizza_name)
+
         if (!existed) {
           const _pizza: IPizza = {
             name: formated.pizza_name,
             category: formated.pizza_category,
             ingredients: formated.pizza_ingredients,
-            sizes: {}
+            sizes: []
           }
 
-          _pizza.sizes[formated.pizza_size] = formated.unit_price;
+
+          _pizza.sizes.push({
+            pizza_name_id: formated.pizza_name_id,
+            unit_price: formated.unit_price,
+            size: formated.pizza_size
+          });
 
           pizza_list.push(_pizza)
         } else {
-          existed.sizes[formated.pizza_size] = formated.unit_price;
+          const existedSize = existed.sizes.find(e => e.pizza_name_id == formated.pizza_name_id);
+
+          if (!existedSize)
+            existed.sizes.push({
+              pizza_name_id: formated.pizza_name_id,
+              unit_price: formated.unit_price,
+              size: formated.pizza_size
+            });
         }
       })
       .on('end', async () => {
