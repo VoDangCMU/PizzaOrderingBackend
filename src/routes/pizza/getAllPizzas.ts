@@ -10,7 +10,7 @@ export default async function getAllPizzas(req: Request, res: Response) {
 		const pizzas = await PizzaRepository.find({
 			relations: {sizes: true, category: true, extras: true, crusts: true, images: true},
 			order: {
-				createdAt: "asc"
+				createdAt: "desc"
 			}
 		});
 
