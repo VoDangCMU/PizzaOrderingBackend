@@ -46,6 +46,8 @@ export default async function createPizzaSize(req: Request, res: Response) {
 	Object.assign(pizzaSize, pizzaSizeData);
 	pizzaSize.pizza = existedPizza;
 
+	pizzaSize.pizzaNameID = "vd_" + existedPizza.name.toLowerCase().split(" ").join("_").concat("_").concat(pizzaSizeData.size.toLowerCase());
+
 	try {
 		await PizzaSizeRepository.save(pizzaSize);
 	} catch (e) {
